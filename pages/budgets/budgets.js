@@ -18,7 +18,11 @@ Page({
     },
 
     async onShow() {
-        await getApp().ensureReady();
+        const ready = await getApp().ensureReady();
+        if (ready.error) {
+            wx.reLaunch({ url: '/pages/login/login' });
+            return;
+        }
         await this.loadOptions();
         await this.refresh();
     },

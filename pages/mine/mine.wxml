@@ -3,12 +3,12 @@
         <view class="avatar">{{avatarText}}</view>
         <view class="profile-info">
             <input class="nickname-input" placeholder="设置昵称" value="{{nicknameInput}}" bindinput="onNicknameInput" />
-            <text class="profile-desc">共 {{recordCount}} 笔账目 · 数据仅存本机</text>
+            <text class="profile-desc">共 {{recordCount}} 笔账目 · 云端同步</text>
         </view>
         <view class="save-nick" bindtap="onSaveNickname">保存</view>
     </view>
 
-    <view class="notice">单机模式：账目保存在这台设备的微信里，清除缓存或卸载小程序会丢失；多设备同步、家庭共享需后续接入云端。</view>
+    <view class="notice">账目保存在云端，仅当前登录账号可见。清空数据会删除云端全部记录，操作前建议先导出 CSV 备份。</view>
 
     <view class="card" wx:for="{{menuGroups}}" wx:for-item="group" wx:key="key">
         <text class="group-title">{{group.title}}</text>
@@ -19,4 +19,5 @@
     </view>
 
     <view class="danger-btn" bindtap="onReset">清空全部数据</view>
+    <view class="signout-btn" bindtap="onSignOut">退出登录</view>
 </view>

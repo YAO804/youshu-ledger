@@ -13,7 +13,11 @@ Page({
     },
 
     async onShow() {
-        await getApp().ensureReady();
+        const ready = await getApp().ensureReady();
+        if (ready.error) {
+            wx.reLaunch({ url: '/pages/login/login' });
+            return;
+        }
         const { data } = await store.getProfile();
         if (data) this.setData({ recordCount: data.recordCount });
     },

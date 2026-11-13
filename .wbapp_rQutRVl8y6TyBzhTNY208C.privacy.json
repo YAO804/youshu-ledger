@@ -1,4 +1,5 @@
 [
+  { "Email": "使用邮箱验证码登录" },
   { "Clipboard": "复制导出的账目 CSV" },
   { "MessageFile": "选择要导入的账单 CSV 文件" }
 ]

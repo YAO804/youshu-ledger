@@ -1,0 +1,57 @@
+.page {
+    box-sizing: border-box;
+    min-height: 100vh;
+    padding: 96rpx 40rpx 48rpx;
+}
+
+.hero {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 64rpx;
+}
+
+.hero-title {
+    font-size: 52rpx;
+    font-weight: 500;
+}
+
+.hero-desc {
+    margin-top: 16rpx;
+    font-size: 26rpx;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 48rpx 0 32rpx;
+    font-size: 24rpx;
+    color: var(--text-secondary);
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1rpx;
+    margin: 0 24rpx;
+    background: #e5e8eb;
+}
+
+.wb-login {
+    border-radius: 16rpx;
+    background: #ffffff;
+    color: var(--brand);
+    font-size: 30rpx;
+    line-height: 88rpx;
+}
+
+.login-error {
+    display: block;
+    margin-top: 24rpx;
+    text-align: center;
+    font-size: 24rpx;
+    color: var(--expense);
+}

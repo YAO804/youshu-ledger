@@ -1,0 +1,13 @@
+<view class="page">
+    <view class="hero">
+        <text class="hero-title">有数记账</text>
+        <text class="hero-desc">登录后账目保存在云端，换设备也能继续记</text>
+    </view>
+
+    <login-panel bind:signedin="onSignedIn" />
+
+    <view class="divider"><text>或</text></view>
+
+    <button class="wb-login" loading="{{loggingIn}}" disabled="{{loggingIn}}" bindtap="onWorkBuddyLogin">使用 WorkBuddy 登录</button>
+    <text wx:if="{{loginError}}" class="login-error">{{loginError}}</text>
+</view>

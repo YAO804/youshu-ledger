@@ -8,7 +8,8 @@
     "pages/categories/categories",
     "pages/budgets/budgets",
     "pages/recurring/recurring",
-    "pages/data/data"
+    "pages/data/data",
+    "pages/login/login"
   ],
   "window": {
     "navigationBarTitleText": "有数记账",

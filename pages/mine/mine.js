@@ -33,7 +33,11 @@ Page({
     },
 
     async onShow() {
-        await getApp().ensureReady();
+        const ready = await getApp().ensureReady();
+        if (ready.error) {
+            wx.reLaunch({ url: '/pages/login/login' });
+            return;
+        }
         await this.refresh();
     },
 
@@ -74,6 +78,17 @@ Page({
             url: path,
             fail: () => wx.showToast({ title: '页面暂未开放', icon: 'none' }),
         });
+    },
+
+    async onSignOut() {
+        const { cloud } = require('../../utils/cloud');
+        const { error } = await cloud.auth.signOut();
+        if (error) {
+            wx.showToast({ title: error.message || '退出失败', icon: 'none' });
+            return;
+        }
+        getApp().resetSession();
+        wx.reLaunch({ url: '/pages/login/login' });
     },
 
     onReset() {
