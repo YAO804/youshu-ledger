@@ -14,3 +14,6 @@ _wb_scaffold/
 
 # WorkBuddy 本地元数据（含会话记忆，不入库）
 .workbuddy/
+
+# 应用卡标记（本地注册产物）
+*.genie
