@@ -23,7 +23,7 @@
     <view class="card">
         <text class="section-title">已设置的预算</text>
         <view wx:if="{{rows.length === 0}}" class="state">本月未设置预算</view>
-        <view wx:else class="list-item" wx:for="{{rows}}" wx:key="id">
+        <view wx:if="{{rows.length > 0}}" class="list-item" wx:for="{{rows}}" wx:key="id">
             <view class="item-main">
                 <text class="item-title">{{item.name}}</text>
                 <text class="item-sub">¥ {{item.amountText}} / 月</text>

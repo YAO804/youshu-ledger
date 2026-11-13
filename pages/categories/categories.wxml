@@ -15,7 +15,7 @@
     <view class="card">
         <text class="section-title">{{formType === 'income' ? '收入' : '支出'}}分类</text>
         <view wx:if="{{rows.length === 0}}" class="state">还没有分类</view>
-        <view wx:else class="list-item" wx:for="{{rows}}" wx:key="id">
+        <view wx:if="{{rows.length > 0}}" class="list-item" wx:for="{{rows}}" wx:key="id">
             <view class="item-main">
                 <text class="item-title">{{item.name}}</text>
                 <text class="item-sub">{{item.typeText}}{{item.builtin ? ' · 预置' : ' · 自定义'}}</text>

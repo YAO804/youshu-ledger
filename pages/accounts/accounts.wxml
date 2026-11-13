@@ -17,7 +17,7 @@
     <view class="card">
         <text class="section-title">支付账户</text>
         <view wx:if="{{rows.length === 0}}" class="state">还没有账户</view>
-        <view wx:else class="list-item" wx:for="{{rows}}" wx:key="id">
+        <view wx:if="{{rows.length > 0}}" class="list-item" wx:for="{{rows}}" wx:key="id">
             <view class="item-main">
                 <text class="item-title">{{item.name}}<text wx:if="{{item.isDefault}}" class="default-tag">默认</text></text>
                 <text class="item-sub">初始 ¥ {{item.initialBalanceText}} · 当前 ¥ {{item.balanceText}}</text>

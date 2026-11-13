@@ -36,7 +36,7 @@
     <view class="card">
         <text class="section-title">已有规则</text>
         <view wx:if="{{rows.length === 0}}" class="state">还没有周期规则</view>
-        <view wx:else class="list-item" wx:for="{{rows}}" wx:key="id">
+        <view wx:if="{{rows.length > 0}}" class="list-item" wx:for="{{rows}}" wx:key="id">
             <view class="item-main">
                 <text class="item-title">{{item.title}} · ¥ {{item.amountYuan}}</text>
                 <text class="item-sub">{{item.accountName}} · 下次 {{item.nextRunAt}} · {{item.statusText}}</text>

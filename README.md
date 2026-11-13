@@ -100,22 +100,25 @@ tests/ledger-store.smoke.js       双模式数据层冒烟测试
 ```bash
 node tests/ledger-store.smoke.js
 node tests/cloud-fallback.smoke.js
+node tests/wxml-structure.smoke.js
 ```
 
-32 项断言（内存模拟 `cloud.database` 与 `wx` storage）覆盖：云端种子与记账、月汇总、余额聚合、统计、预算与超支、周期幂等、CSV 导入导出与去重、昵称、清空数据；以及**本地试用模式自动生效、未登录直接记账、登录后迁移到云端、迁移后本地清空、重复迁移不重复导入**。
+- **32 项**双模式数据层断言（内存模拟 `cloud.database` 与 `wx` storage）：云端种子与记账、月汇总、余额聚合、统计、预算与超支、周期幂等、CSV 导入导出与去重、昵称、清空数据；以及本地试用自动生效、未登录直接记账、登录后迁移上云、迁移后本地清空、重复迁移不重复导入。
+- **6 项** SDK 降级回归：模块缺失、客户端能力残缺时都降级为完整 stub，完整客户端保持可用。
+- **11 个 WXML** 静态回归：禁止 `wx:else` / `wx:elif` 与 `wx:for` 同标签、禁止数组下标表达式。这条对应只有微信原生编译才报的 `Bad attr wx:else ... wx:if not found`，已修 6 处。
 
-另有 6 项 SDK 降级回归断言：SDK 模块缺失、客户端能力残缺时都自动降级为完整 stub（`getSession` / `handleWorkBuddyMiniProgramCallback` 仍可用），完整客户端保持可用。对应预览器报 `xxx is not a function` 的那类问题。
+数据库侧：6 张表 RLS 开启、6 条 owner-only 策略、`(owner_id, source_key)` 唯一索引、SQL 写入读回成功（数据已清理）。真实 SDK 连通性：初始化成功，匿名 SELECT `HTTP 200 / data: []`。
 
-数据库侧已确认：6 张表存在且 RLS 开启、6 条 owner-only 策略就位、`(owner_id, source_key)` 唯一索引存在、SQL 写入读回成功（验证数据已清理，`ledger_records` 0 行）。真实 SDK 连通性：客户端初始化成功，匿名 SELECT 返回 `HTTP 200 / data: []`。
+**微信开发者工具 2.02.2609250 原生编译已通过**：`cli build-npm` 生成 `miniprogram_npm/@tencent-ai/workbuddy-cloud-sdk/miniprogram.js`（SDK 的 `exports` 子路径被正确解析），`cli preview` 编译打包成功（353.1 KB）。自动化端口连上运行时后确认：`App()` 已注册、页面栈正常、本地试用种子写入 **4 个账户（首项「默认账户」）+ 15 个分类**。
 
 静态校验：10 个页面四件套齐全、JSON 合法、tabBar 路径均已声明、无浏览器 API、所有 JS 通过 `node --check`。
 
 ### 已知边界
 
 - 平台对未带 session 的请求返回 `auth.uid() = 'anon'`，绕过小程序直接用 `publishableKey` 调 REST 的匿名写入会落到 `owner_id = 'anon'`。这类数据与登录用户隔离，但共享匿名命名空间；当前防线是云版实现的 `requireSession()`。**不要贸然把策略收紧到只 `authenticated`**：匿名登录会话也使用 `anon` 角色，收紧可能误伤登录用户。
-- 本机未安装微信开发者工具，**微信原生编译、真机 / 体验版、邮箱 OTP 真实收发、WorkBuddy 小程序原生授权往返、登录后真机写入读回、退出后受保护数据不可访问均未验证**。
+- **真机 / 体验版、邮箱 OTP 真实收发、WorkBuddy 小程序原生授权往返、登录后真机云读写、退出后受保护数据不可访问，仍未验证**（需手机扫预览码）。
 - 当前是 owner-only 的账号私有账本，最初确认的「家庭/情侣共享」（household / member / 同组 RLS / 邀请流程）仍未实现。
 
 ## 本地运行
 
-用微信开发者工具「导入项目」选择本目录（AppID 可用测试号），或在 WorkBuddy 内预览。`appid` 当前为 `touristappid`，正式发布前替换为自己的小程序 AppID。未构建 `miniprogram_npm` 时应用会自动进入本地试用模式，不会白屏；需要云同步时再执行小程序 npm 构建。
+用微信开发者工具「导入项目」选择本目录，或在 WorkBuddy 内预览。`project.config.json` 的 `appid` 已被工具自动写为 `wx2b204ff465b4935c`（原先为 `touristappid`）。首次在本机编译需执行「工具 → 构建 npm」；`miniprogram_npm/` 已在 `.gitignore` 中，不入库。未构建或 SDK 加载失败时应用自动进入本地试用模式，不会白屏。
