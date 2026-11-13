@@ -1,0 +1,34 @@
+<view class="page">
+    <view class="card summary">
+        <text class="summary-label">{{monthLabel}} 月结余</text>
+        <text class="summary-amount">¥ {{balanceText}}</text>
+        <view class="summary-row">
+            <view class="summary-cell">
+                <text class="summary-cell-label">收入</text>
+                <text class="summary-cell-value income">¥ {{incomeText}}</text>
+            </view>
+            <view class="summary-cell">
+                <text class="summary-cell-label">支出</text>
+                <text class="summary-cell-value expense">¥ {{expenseText}}</text>
+            </view>
+        </view>
+    </view>
+
+    <view class="section-title">
+        <text>账目明细</text>
+        <text class="section-hint">共 {{recordCount}} 笔</text>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="state">正在加载账目…</view>
+    <view wx:elif="{{viewState === 'error'}}" class="state">{{errorText}}</view>
+    <view wx:elif="{{records.length === 0}}" class="state">还没有账目，点「记一笔」开始记录</view>
+    <view wx:else class="card">
+        <view class="row" wx:for="{{records}}" wx:key="id">
+            <view class="record-main">
+                <text class="record-category">{{item.categoryName}}</text>
+                <text class="record-meta">{{item.dateText}} · {{item.accountName}} · {{item.creatorName}}</text>
+            </view>
+            <text class="record-amount {{item.type === 'income' ? 'income' : 'expense'}}">{{item.amountText}}</text>
+        </view>
+    </view>
+</view>

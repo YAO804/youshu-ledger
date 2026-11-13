@@ -1,0 +1,57 @@
+.summary {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-label {
+    font-size: 26rpx;
+    color: var(--text-secondary);
+}
+
+.summary-amount {
+    margin-top: 16rpx;
+    font-size: 64rpx;
+    font-weight: 500;
+}
+
+.summary-row {
+    display: flex;
+    margin-top: 32rpx;
+    padding-top: 24rpx;
+    border-top: 1rpx solid #f0f1f3;
+}
+
+.summary-cell {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.summary-cell-label {
+    font-size: 24rpx;
+    color: var(--text-secondary);
+}
+
+.summary-cell-value {
+    margin-top: 8rpx;
+    font-size: 32rpx;
+}
+
+.record-main {
+    display: flex;
+    flex-direction: column;
+}
+
+.record-category {
+    font-size: 28rpx;
+}
+
+.record-meta {
+    margin-top: 6rpx;
+    font-size: 22rpx;
+    color: var(--text-secondary);
+}
+
+.record-amount {
+    font-size: 30rpx;
+}

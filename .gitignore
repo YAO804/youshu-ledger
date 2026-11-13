@@ -1,0 +1,16 @@
+# 微信开发者工具 / IDE
+project.private.config.json
+.idea/
+.vscode/
+.DS_Store
+
+# 依赖与构建产物
+node_modules/
+miniprogram_npm/
+
+# 日志与临时目录
+*.log
+_wb_scaffold/
+
+# WorkBuddy 本地元数据（含会话记忆，不入库）
+.workbuddy/

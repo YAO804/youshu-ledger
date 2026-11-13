@@ -1,0 +1,84 @@
+page {
+    --brand: #2f6fed;
+    --expense: #d9534f;
+    --income: #2f9e6b;
+    --text-primary: #1f2329;
+    --text-secondary: #8a8f99;
+    --surface: #ffffff;
+    --page-bg: #f5f7fa;
+    background: var(--page-bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+}
+
+.page {
+    box-sizing: border-box;
+    min-height: 100vh;
+    padding: 24rpx 24rpx 48rpx;
+}
+
+.card {
+    background: var(--surface);
+    border-radius: 20rpx;
+    padding: 32rpx;
+    margin-bottom: 24rpx;
+}
+
+.section-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 8rpx 8rpx 20rpx;
+    font-size: 30rpx;
+    font-weight: 500;
+}
+
+.section-hint {
+    font-size: 24rpx;
+    color: var(--text-secondary);
+}
+
+.state {
+    padding: 80rpx 24rpx;
+    text-align: center;
+    font-size: 26rpx;
+    color: var(--text-secondary);
+}
+
+.expense {
+    color: var(--expense);
+}
+
+.income {
+    color: var(--income);
+}
+
+.btn-primary {
+    background: var(--brand);
+    color: #ffffff;
+    border-radius: 16rpx;
+    font-size: 30rpx;
+    line-height: 88rpx;
+    text-align: center;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 96rpx;
+    border-bottom: 1rpx solid #f0f1f3;
+}
+
+.row:last-child {
+    border-bottom: none;
+}
+
+.row-label {
+    font-size: 28rpx;
+}
+
+.row-value {
+    font-size: 26rpx;
+    color: var(--text-secondary);
+}

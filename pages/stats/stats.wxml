@@ -1,0 +1,31 @@
+<view class="page">
+    <view class="card">
+        <text class="section-title">月度收支趋势</text>
+        <view class="chart-placeholder">
+            <text>数据层接入后展示近 6 个月趋势</text>
+        </view>
+    </view>
+
+    <view class="card">
+        <text class="section-title">支出分类占比</text>
+        <view wx:if="{{categoryRows.length === 0}}" class="state">暂无分类数据</view>
+        <view wx:else class="row" wx:for="{{categoryRows}}" wx:key="id">
+            <text class="row-label">{{item.name}}</text>
+            <text class="row-value">{{item.amountText}} · {{item.percentText}}</text>
+        </view>
+    </view>
+
+    <view class="card">
+        <text class="section-title">预算进度</text>
+        <view wx:if="{{budgetRows.length === 0}}" class="state">暂无预算数据</view>
+        <view wx:else class="budget-row" wx:for="{{budgetRows}}" wx:key="id">
+            <view class="budget-head">
+                <text class="row-label">{{item.name}}</text>
+                <text class="row-value">{{item.usedText}} / {{item.limitText}}</text>
+            </view>
+            <view class="budget-track">
+                <view class="budget-fill {{item.over ? 'over' : ''}}" style="width: {{item.percent}}%"></view>
+            </view>
+        </view>
+    </view>
+</view>

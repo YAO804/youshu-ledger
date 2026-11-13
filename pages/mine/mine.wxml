@@ -1,0 +1,17 @@
+<view class="page">
+    <view class="card profile">
+        <view class="avatar">{{avatarText}}</view>
+        <view class="profile-info">
+            <text class="profile-name">{{nickname}}</text>
+            <text class="profile-desc">{{householdName}}</text>
+        </view>
+    </view>
+
+    <view class="card" wx:for="{{menuGroups}}" wx:for-item="group" wx:key="key">
+        <text class="group-title">{{group.title}}</text>
+        <view class="row" wx:for="{{group.items}}" wx:for-item="item" wx:key="key" data-key="{{item.key}}" bindtap="onMenuTap">
+            <text class="row-label">{{item.text}}</text>
+            <text class="row-value">›</text>
+        </view>
+    </view>
+</view>
