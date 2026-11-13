@@ -38,12 +38,21 @@ try {
     const { createMiniProgramWorkBuddyCloud } = require('@tencent-ai/workbuddy-cloud-sdk/miniprogram');
     const { createDiagnosticWx } = require('./workbuddy-cloud-diagnostics');
 
-    cloud = createMiniProgramWorkBuddyCloud({
+    const client = createMiniProgramWorkBuddyCloud({
         endpoint: publicConfig.endpoint,
         publishableKey: publicConfig.publishableKey,
         workBuddyOAuthClientId: publicConfig.workBuddyOAuthClientId,
         wx: createDiagnosticWx(wx),
     });
+    // 预览器 / H5 模拟环境可能给出能力残缺的客户端。缺任一核心方法就整体降级，
+    // 避免后续生命周期里出现「xxx is not a function」。
+    const auth = client && client.auth;
+    if (!auth || typeof auth.getSession !== 'function'
+        || typeof auth.handleWorkBuddyMiniProgramCallback !== 'function'
+        || !client.database || typeof client.database.from !== 'function') {
+        throw new Error('云 SDK 客户端能力不完整（可能处于非原生小程序运行环境）');
+    }
+    cloud = client;
     cloudAvailable = true;
 } catch (error) {
     cloudError = error;

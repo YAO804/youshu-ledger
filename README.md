@@ -41,8 +41,8 @@
 | `utils/workbuddy-data-access.js` | `createTableAccess` 单表 CRUD 封装，0 行命中视为失败 |
 | `utils/workbuddy-cloud-diagnostics.js` | 云请求失败时输出到 vConsole |
 | `components/login-panel/` | 邮箱验证码登录，发送与验证分离 |
-| `pages/login/` | 可选的登录页，登录后触发数据迁移，可随时「先不登录」 |
-| `app.js` | `onShow` 把完整 options 交给 SDK 处理授权回调；`ensureReady()` 在两种模式下都能完成初始化 |
+| `pages/login/` | 可选的登录页，按需处理授权回跳并触发数据迁移，可随时「先不登录」 |
+| `app.js` | `onShow` 只保存启动参数、**不调用任何云 SDK 方法**（预览器 / H5 生命周期模拟不具备小程序原生授权 API）；`ensureReady()` 在两种模式下都能完成初始化 |
 
 `utils/cloud.js` 只使用 `publicConfig` 的三个公开值（`endpoint` / `publishableKey` / `workBuddyOAuthClientId`），服务端密钥不下发。前端**不发送 `owner_id`**。
 
@@ -99,9 +99,12 @@ tests/ledger-store.smoke.js       双模式数据层冒烟测试
 
 ```bash
 node tests/ledger-store.smoke.js
+node tests/cloud-fallback.smoke.js
 ```
 
 32 项断言（内存模拟 `cloud.database` 与 `wx` storage）覆盖：云端种子与记账、月汇总、余额聚合、统计、预算与超支、周期幂等、CSV 导入导出与去重、昵称、清空数据；以及**本地试用模式自动生效、未登录直接记账、登录后迁移到云端、迁移后本地清空、重复迁移不重复导入**。
+
+另有 6 项 SDK 降级回归断言：SDK 模块缺失、客户端能力残缺时都自动降级为完整 stub（`getSession` / `handleWorkBuddyMiniProgramCallback` 仍可用），完整客户端保持可用。对应预览器报 `xxx is not a function` 的那类问题。
 
 数据库侧已确认：6 张表存在且 RLS 开启、6 条 owner-only 策略就位、`(owner_id, source_key)` 唯一索引存在、SQL 写入读回成功（验证数据已清理，`ledger_records` 0 行）。真实 SDK 连通性：客户端初始化成功，匿名 SELECT 返回 `HTTP 200 / data: []`。
 

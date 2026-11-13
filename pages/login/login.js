@@ -15,6 +15,7 @@ Page({
             this.setData({ loginError: '云服务组件未加载，当前只能本地试用' });
             return;
         }
+        await this.handleAuthCallback();
         const { data: session, error } = await cloud.auth.getSession();
         if (!error && session) {
             this.setData({ signedIn: true });
@@ -22,6 +23,25 @@ Page({
             return;
         }
         this.setData({ signedIn: false });
+    },
+
+    // WorkBuddy 小程序授权回跳：把 App.onShow 保存的完整 options 交给 SDK。
+    // 动态取方法 + try/catch，保证预览器 / 能力残缺的环境下不中断页面生命周期。
+    async handleAuthCallback() {
+        const app = getApp();
+        const options = app && app.launchOptions;
+        if (!options) return;
+        const auth = cloud && cloud.auth;
+        const name = 'handleWorkBuddyMiniProgramCallback';
+        const handler = auth && typeof auth[name] === 'function' ? auth[name] : null;
+        if (!handler) return;
+        try {
+            await handler.call(auth, options);
+            app.launchOptions = null;
+            store.resetMode();
+        } catch (e) {
+            // 回跳处理失败按未登录继续，不阻断页面。
+        }
     },
 
     // 登录成功后把本地试用账目搬到云端；迁移失败保留本地数据，不阻断使用。
