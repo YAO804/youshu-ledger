@@ -2,16 +2,21 @@
     <view class="card profile">
         <view class="avatar">{{avatarText}}</view>
         <view class="profile-info">
-            <text class="profile-name">{{nickname}}</text>
-            <text class="profile-desc">{{householdName}}</text>
+            <input class="nickname-input" placeholder="设置昵称" value="{{nicknameInput}}" bindinput="onNicknameInput" />
+            <text class="profile-desc">共 {{recordCount}} 笔账目 · 数据仅存本机</text>
         </view>
+        <view class="save-nick" bindtap="onSaveNickname">保存</view>
     </view>
+
+    <view class="notice">单机模式：账目保存在这台设备的微信里，清除缓存或卸载小程序会丢失；多设备同步、家庭共享需后续接入云端。</view>
 
     <view class="card" wx:for="{{menuGroups}}" wx:for-item="group" wx:key="key">
         <text class="group-title">{{group.title}}</text>
-        <view class="row" wx:for="{{group.items}}" wx:for-item="item" wx:key="key" data-key="{{item.key}}" bindtap="onMenuTap">
+        <view class="row" wx:for="{{group.items}}" wx:for-item="item" wx:key="key" data-path="{{item.path}}" bindtap="onMenuTap">
             <text class="row-label">{{item.text}}</text>
             <text class="row-value">›</text>
         </view>
     </view>
+
+    <view class="danger-btn" bindtap="onReset">清空全部数据</view>
 </view>

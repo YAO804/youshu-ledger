@@ -1,0 +1,36 @@
+<view class="page">
+    <view class="card month-bar">
+        <view class="month-btn" bindtap="onPrevMonth">‹</view>
+        <text class="month-label">{{monthLabel}} 预算</text>
+        <view class="month-btn" bindtap="onNextMonth">›</view>
+    </view>
+
+    <view class="card">
+        <text class="section-title">设置预算</text>
+        <picker mode="selector" range="{{categoryNames}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+            <view class="row">
+                <text class="row-label">预算范围</text>
+                <text class="row-value">{{categoryName}}</text>
+            </view>
+        </picker>
+        <view class="form-row" style="margin-top: 16rpx">
+            <input class="form-input" type="digit" placeholder="预算金额（元）" value="{{formAmount}}" bindinput="onAmountInput" />
+            <view class="mini-btn" bindtap="onSave">保存</view>
+        </view>
+        <text class="hint-text">总预算对当月全部支出生效；分类预算只统计该分类。同一范围重复设置会覆盖，超支会在明细页提示。</text>
+    </view>
+
+    <view class="card">
+        <text class="section-title">已设置的预算</text>
+        <view wx:if="{{rows.length === 0}}" class="state">本月未设置预算</view>
+        <view wx:else class="list-item" wx:for="{{rows}}" wx:key="id">
+            <view class="item-main">
+                <text class="item-title">{{item.name}}</text>
+                <text class="item-sub">¥ {{item.amountText}} / 月</text>
+            </view>
+            <view class="item-actions">
+                <view class="mini-btn danger" data-id="{{item.id}}" catchtap="onDelete">删除</view>
+            </view>
+        </view>
+    </view>
+</view>

@@ -1,27 +1,48 @@
 <view class="page">
+    <view class="card month-bar">
+        <view class="month-btn" bindtap="onPrevMonth">‹</view>
+        <text class="month-label">{{monthLabel}}</text>
+        <view class="month-btn" bindtap="onNextMonth">›</view>
+    </view>
+
     <view class="card">
-        <text class="section-title">月度收支趋势</text>
-        <view class="chart-placeholder">
-            <text>数据层接入后展示近 6 个月趋势</text>
+        <text class="section-title">近 6 个月收支趋势</text>
+        <view class="legend">
+            <text class="legend-item income">■ 收入</text>
+            <text class="legend-item expense">■ 支出</text>
+        </view>
+        <view class="trend-chart">
+            <view class="trend-col" wx:for="{{trendRows}}" wx:key="id">
+                <view class="trend-bars">
+                    <view class="bar income-bar" style="height: {{item.incomeHeight}}rpx"></view>
+                    <view class="bar expense-bar" style="height: {{item.expenseHeight}}rpx"></view>
+                </view>
+                <text class="trend-label">{{item.label}}</text>
+            </view>
         </view>
     </view>
 
     <view class="card">
         <text class="section-title">支出分类占比</text>
-        <view wx:if="{{categoryRows.length === 0}}" class="state">暂无分类数据</view>
-        <view wx:else class="row" wx:for="{{categoryRows}}" wx:key="id">
-            <text class="row-label">{{item.name}}</text>
-            <text class="row-value">{{item.amountText}} · {{item.percentText}}</text>
+        <view wx:if="{{categoryRows.length === 0}}" class="state">本月暂无支出数据</view>
+        <view wx:else class="cat-row" wx:for="{{categoryRows}}" wx:key="id">
+            <view class="cat-head">
+                <text class="row-label">{{item.name}}</text>
+                <text class="row-value">{{item.amountText}} · {{item.percentText}}</text>
+            </view>
+            <view class="cat-track">
+                <view class="cat-fill" style="width: {{item.percent}}%"></view>
+            </view>
         </view>
     </view>
 
     <view class="card">
         <text class="section-title">预算进度</text>
-        <view wx:if="{{budgetRows.length === 0}}" class="state">暂无预算数据</view>
+        <view wx:if="{{budgetRows.length === 0}}" class="state">本月未设置预算，可在「我的」里添加</view>
         <view wx:else class="budget-row" wx:for="{{budgetRows}}" wx:key="id">
             <view class="budget-head">
                 <text class="row-label">{{item.name}}</text>
-                <text class="row-value">{{item.usedText}} / {{item.limitText}}</text>
+                <text class="row-value {{item.over ? 'expense' : ''}}">{{item.usedText}} / {{item.limitText}}</text>
             </view>
             <view class="budget-track">
                 <view class="budget-fill {{item.over ? 'over' : ''}}" style="width: {{item.percent}}%"></view>

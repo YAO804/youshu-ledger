@@ -1,23 +1,68 @@
+const store = require('../../utils/ledger-store');
+const { toCents, today } = require('../../utils/format');
+
 Page({
     data: {
         formType: 'expense',
         amount: '',
+        categoryNames: [],
+        categoryIds: [],
+        categoryIndex: 0,
         categoryName: '请选择',
+        accountNames: [],
+        accountIds: [],
+        accountIndex: 0,
         accountName: '请选择',
         date: '',
         note: '',
         hintText: '',
+        saving: false,
     },
 
     onLoad() {
-        const now = new Date();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        this.setData({ date: now.getFullYear() + '-' + month + '-' + day });
+        this.setData({ date: today() });
     },
 
-    onTypeChange(event) {
-        this.setData({ formType: event.currentTarget.dataset.type, hintText: '' });
+    async onShow() {
+        await getApp().ensureReady();
+        await this.loadOptions();
+    },
+
+    async loadOptions() {
+        const accounts = await store.getAccounts();
+        const categories = await store.getCategories(this.data.formType);
+        this.setData({
+            accountNames: accounts.data.map((a) => a.name),
+            accountIds: accounts.data.map((a) => a.id),
+            accountIndex: 0,
+            accountName: accounts.data.length ? accounts.data[0].name : '请先添加账户',
+            categoryNames: categories.data.map((c) => c.name),
+            categoryIds: categories.data.map((c) => c.id),
+            categoryIndex: 0,
+            categoryName: categories.data.length ? categories.data[0].name : '请先添加分类',
+        });
+    },
+
+    async onTypeChange(event) {
+        const formType = event.currentTarget.dataset.type;
+        this.setData({ formType, hintText: '' });
+        const categories = await store.getCategories(formType);
+        this.setData({
+            categoryNames: categories.data.map((c) => c.name),
+            categoryIds: categories.data.map((c) => c.id),
+            categoryIndex: 0,
+            categoryName: categories.data.length ? categories.data[0].name : '请先添加分类',
+        });
+    },
+
+    onCategoryChange(event) {
+        const index = Number(event.detail.value);
+        this.setData({ categoryIndex: index, categoryName: this.data.categoryNames[index] });
+    },
+
+    onAccountChange(event) {
+        const index = Number(event.detail.value);
+        this.setData({ accountIndex: index, accountName: this.data.accountNames[index] });
     },
 
     onAmountInput(event) {
@@ -32,22 +77,36 @@ Page({
         this.setData({ date: event.detail.value });
     },
 
-    onPickCategory() {
-        wx.showToast({ title: '分类数据待接入', icon: 'none' });
-    },
-
-    onPickAccount() {
-        wx.showToast({ title: '账户数据待接入', icon: 'none' });
-    },
-
-    onSubmit() {
-        const amount = Number(this.data.amount);
-        if (!amount || amount <= 0) {
+    async onSubmit() {
+        if (this.data.saving) return;
+        const amountCents = toCents(this.data.amount);
+        if (!amountCents) {
             this.setData({ hintText: '请输入大于 0 的金额' });
             return;
         }
-        // 数据层接入后：金额转为整数分，写入 record 表，成功后返回明细页。
-        this.setData({ hintText: '数据层尚未接入，暂不能保存' });
-        wx.showToast({ title: '数据层未接入', icon: 'none' });
+        const categoryId = this.data.categoryIds[this.data.categoryIndex];
+        const accountId = this.data.accountIds[this.data.accountIndex];
+        if (!categoryId || !accountId) {
+            this.setData({ hintText: '请先在「我的」里添加分类和账户' });
+            return;
+        }
+        this.setData({ saving: true });
+        const { error } = await store.createRecord({
+            type: this.data.formType,
+            amountCents,
+            categoryId,
+            accountId,
+            note: this.data.note,
+            occurredAt: this.data.date,
+        });
+        this.setData({ saving: false });
+        if (error) {
+            this.setData({ hintText: error.message });
+            wx.showToast({ title: error.message, icon: 'none' });
+            return;
+        }
+        this.setData({ amount: '', note: '', hintText: '' });
+        wx.showToast({ title: '已保存', icon: 'success' });
+        wx.switchTab({ url: '/pages/index/index' });
     },
 });

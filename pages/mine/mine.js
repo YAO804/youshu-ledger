@@ -1,38 +1,97 @@
+const store = require('../../utils/ledger-store');
+
 Page({
     data: {
         avatarText: '?',
-        nickname: '未登录',
-        householdName: '家庭共享账本',
+        nicknameInput: '',
+        recordCount: 0,
         menuGroups: [
             {
-                key: 'household',
-                title: '账本与成员',
+                key: 'basic',
+                title: '基础设置',
                 items: [
-                    { key: 'members', text: '家庭成员与邀请' },
-                    { key: 'accounts', text: '支付账户与余额' },
-                    { key: 'categories', text: '分类管理' },
+                    { key: 'accounts', text: '支付账户与余额', path: '/pages/accounts/accounts' },
+                    { key: 'categories', text: '分类管理', path: '/pages/categories/categories' },
                 ],
             },
             {
-                key: 'settings',
-                title: '记账设置',
+                key: 'rules',
+                title: '记账规则',
                 items: [
-                    { key: 'budgets', text: '预算与超支提醒' },
-                    { key: 'recurring', text: '周期记账规则' },
+                    { key: 'budgets', text: '预算与超支提醒', path: '/pages/budgets/budgets' },
+                    { key: 'recurring', text: '周期记账规则', path: '/pages/recurring/recurring' },
                 ],
             },
             {
                 key: 'data',
                 title: '数据',
                 items: [
-                    { key: 'import', text: '账单导入' },
-                    { key: 'export', text: '数据导出' },
+                    { key: 'data', text: '账单导入 / 数据导出', path: '/pages/data/data' },
                 ],
             },
         ],
     },
 
-    onMenuTap() {
-        wx.showToast({ title: '数据层接入后开放', icon: 'none' });
+    async onShow() {
+        await getApp().ensureReady();
+        await this.refresh();
+    },
+
+    async refresh() {
+        const { data, error } = await store.getProfile();
+        if (error) {
+            wx.showToast({ title: error.message, icon: 'none' });
+            return;
+        }
+        this.setData({
+            avatarText: data.avatarText,
+            nicknameInput: data.nickname,
+            recordCount: data.recordCount,
+        });
+    },
+
+    onNicknameInput(event) {
+        this.setData({ nicknameInput: event.detail.value });
+    },
+
+    async onSaveNickname() {
+        const { error } = await store.setProfile({ nickname: this.data.nicknameInput });
+        if (error) {
+            wx.showToast({ title: error.message, icon: 'none' });
+            return;
+        }
+        wx.showToast({ title: '已保存', icon: 'success' });
+        await this.refresh();
+    },
+
+    onMenuTap(event) {
+        const path = event.currentTarget.dataset.path;
+        if (!path) {
+            wx.showToast({ title: '功能暂未开放', icon: 'none' });
+            return;
+        }
+        wx.navigateTo({
+            url: path,
+            fail: () => wx.showToast({ title: '页面暂未开放', icon: 'none' }),
+        });
+    },
+
+    onReset() {
+        wx.showModal({
+            title: '清空全部数据',
+            content: '所有账目、账户、分类、预算和周期规则都会被删除，且无法恢复。建议先导出备份。确认清空？',
+            confirmText: '确认清空',
+            confirmColor: '#d9534f',
+            success: async (res) => {
+                if (!res.confirm) return;
+                const { error } = await store.resetAll();
+                if (error) {
+                    wx.showToast({ title: error.message, icon: 'none' });
+                    return;
+                }
+                wx.showToast({ title: '已清空', icon: 'success' });
+                await this.refresh();
+            },
+        });
     },
 });

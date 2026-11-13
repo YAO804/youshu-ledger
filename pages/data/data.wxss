@@ -1,0 +1,18 @@
+.section-title {
+    display: block;
+}
+
+.csv-input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 200rpx;
+    margin: 16rpx 0;
+    padding: 16rpx;
+    border-radius: 12rpx;
+    background: #f5f7fa;
+    font-size: 24rpx;
+}
+
+.hint-text {
+    display: block;
+}

@@ -11,14 +11,18 @@
     </view>
 
     <view class="card">
-        <view class="row" bindtap="onPickCategory">
-            <text class="row-label">分类</text>
-            <text class="row-value">{{categoryName}}</text>
-        </view>
-        <view class="row" bindtap="onPickAccount">
-            <text class="row-label">支付账户</text>
-            <text class="row-value">{{accountName}}</text>
-        </view>
+        <picker mode="selector" range="{{categoryNames}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+            <view class="row">
+                <text class="row-label">分类</text>
+                <text class="row-value">{{categoryName}}</text>
+            </view>
+        </picker>
+        <picker mode="selector" range="{{accountNames}}" value="{{accountIndex}}" bindchange="onAccountChange">
+            <view class="row">
+                <text class="row-label">支付账户</text>
+                <text class="row-value">{{accountName}}</text>
+            </view>
+        </picker>
         <picker mode="date" value="{{date}}" bindchange="onDateChange">
             <view class="row">
                 <text class="row-label">日期</text>
@@ -31,6 +35,6 @@
         </view>
     </view>
 
-    <button class="btn-primary" bindtap="onSubmit">保存</button>
+    <button class="btn-primary" disabled="{{saving}}" bindtap="onSubmit">{{saving ? '保存中…' : '保存'}}</button>
     <text class="form-hint">{{hintText}}</text>
 </view>

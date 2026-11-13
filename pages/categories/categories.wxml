@@ -1,0 +1,28 @@
+<view class="page">
+    <view class="card">
+        <text class="section-title">新增分类</text>
+        <view class="type-switch">
+            <view class="type-item {{formType === 'expense' ? 'active' : ''}}" data-type="expense" bindtap="onTypeChange">支出分类</view>
+            <view class="type-item {{formType === 'income' ? 'active' : ''}}" data-type="income" bindtap="onTypeChange">收入分类</view>
+        </view>
+        <view class="form-row" style="margin-top: 24rpx">
+            <input class="form-input" placeholder="分类名称，如 宠物" value="{{formName}}" bindinput="onNameInput" />
+            <view class="mini-btn" bindtap="onAdd">添加</view>
+        </view>
+        <text class="hint-text">预置分类不可删除；已有账目或预算的分类不可删除。</text>
+    </view>
+
+    <view class="card">
+        <text class="section-title">{{formType === 'income' ? '收入' : '支出'}}分类</text>
+        <view wx:if="{{rows.length === 0}}" class="state">还没有分类</view>
+        <view wx:else class="list-item" wx:for="{{rows}}" wx:key="id">
+            <view class="item-main">
+                <text class="item-title">{{item.name}}</text>
+                <text class="item-sub">{{item.typeText}}{{item.builtin ? ' · 预置' : ' · 自定义'}}</text>
+            </view>
+            <view class="item-actions" wx:if="{{!item.builtin}}">
+                <view class="mini-btn danger" data-id="{{item.id}}" catchtap="onDelete">删除</view>
+            </view>
+        </view>
+    </view>
+</view>

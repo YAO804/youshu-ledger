@@ -3,7 +3,12 @@
     "pages/index/index",
     "pages/add/add",
     "pages/stats/stats",
-    "pages/mine/mine"
+    "pages/mine/mine",
+    "pages/accounts/accounts",
+    "pages/categories/categories",
+    "pages/budgets/budgets",
+    "pages/recurring/recurring",
+    "pages/data/data"
   ],
   "window": {
     "navigationBarTitleText": "有数记账",

@@ -1,0 +1,30 @@
+<view class="page">
+    <view class="card">
+        <text class="section-title">数据导出</text>
+        <text class="hint-text">当前共 {{recordCount}} 笔账目。导出标准 CSV（UTF-8，带 BOM），列为：日期、收支、金额、分类、账户、备注。</text>
+        <view class="form-row">
+            <view class="mini-btn" bindtap="onExport">导出并分享</view>
+            <view class="mini-btn ghost" bindtap="onCopy">复制到剪贴板</view>
+        </view>
+    </view>
+
+    <view class="card">
+        <text class="section-title">账单导入</text>
+        <text class="hint-text">可从聊天选择 CSV 文件，或直接粘贴 CSV 文本。表头需包含「日期/时间」与「金额」列，可选「收支/类型」「分类」「账户」「备注」。微信、支付宝导出的账单请先另存为 UTF-8，否则中文会乱码。重复内容会自动跳过。</text>
+        <view class="form-row">
+            <view class="mini-btn" bindtap="onChooseFile">选择 CSV 文件</view>
+        </view>
+        <textarea class="csv-input" placeholder="或在此粘贴 CSV 内容" value="{{csvText}}" bindinput="onTextInput" />
+        <view class="form-row">
+            <view class="mini-btn" bindtap="onImportText">导入粘贴内容</view>
+        </view>
+        <text wx:if="{{resultText}}" class="hint-text">{{resultText}}</text>
+    </view>
+
+    <view class="card">
+        <text class="section-title">CSV 格式示例</text>
+        <view wx:for="{{exampleLines}}" wx:key="*this">
+            <text class="hint-text">{{item}}</text>
+        </view>
+    </view>
+</view>
