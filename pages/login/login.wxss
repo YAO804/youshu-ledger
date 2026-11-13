@@ -55,3 +55,22 @@
     font-size: 24rpx;
     color: var(--expense);
 }
+
+.skip-login {
+    margin-top: 64rpx;
+    border-radius: 16rpx;
+    background: var(--brand);
+    color: #ffffff;
+    font-size: 30rpx;
+    line-height: 88rpx;
+}
+
+.notice {
+    margin-bottom: 32rpx;
+    padding: 24rpx;
+    border-radius: 12rpx;
+    background: #eef4ff;
+    color: var(--text-secondary);
+    font-size: 26rpx;
+    line-height: 1.6;
+}

@@ -24,7 +24,9 @@ Page({
             wx.showToast({ title: error.message, icon: 'none' });
             return;
         }
-        this.setData({ rows: data });
+        this.setData({
+            rows: data.map((r) => Object.assign({}, r, { isDefault: r.name === '默认账户' })),
+        });
     },
 
     onNameInput(event) {
@@ -73,6 +75,10 @@ Page({
     },
 
     onDelete(event) {
+        if (this.data.rows.length <= 1) {
+            wx.showToast({ title: '至少保留一个账户', icon: 'none' });
+            return;
+        }
         const id = event.currentTarget.dataset.id;
         wx.showModal({
             title: '删除账户',

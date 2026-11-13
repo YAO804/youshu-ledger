@@ -11,7 +11,7 @@
             <view class="mini-btn ghost" wx:if="{{editingId}}" bindtap="onCancelEdit">取消</view>
             <view class="mini-btn" bindtap="onSave">{{editingId ? '保存修改' : '添加账户'}}</view>
         </view>
-        <text class="hint-text">当前余额 = 初始余额 + 该账户全部收入 − 全部支出，随账目自动变化。</text>
+        <text class="hint-text">已内置「默认账户」，打开即可记账，无需先添加账户。当前余额 = 初始余额 + 该账户全部收入 − 全部支出。</text>
     </view>
 
     <view class="card">
@@ -19,12 +19,12 @@
         <view wx:if="{{rows.length === 0}}" class="state">还没有账户</view>
         <view wx:else class="list-item" wx:for="{{rows}}" wx:key="id">
             <view class="item-main">
-                <text class="item-title">{{item.name}}</text>
+                <text class="item-title">{{item.name}}<text wx:if="{{item.isDefault}}" class="default-tag">默认</text></text>
                 <text class="item-sub">初始 ¥ {{item.initialBalanceText}} · 当前 ¥ {{item.balanceText}}</text>
             </view>
             <view class="item-actions">
                 <view class="mini-btn ghost" data-id="{{item.id}}" catchtap="onEdit">编辑</view>
-                <view class="mini-btn danger" data-id="{{item.id}}" catchtap="onDelete">删除</view>
+                <view wx:if="{{!item.isDefault}}" class="mini-btn danger" data-id="{{item.id}}" catchtap="onDelete">删除</view>
             </view>
         </view>
     </view>

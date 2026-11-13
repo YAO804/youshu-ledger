@@ -1,3 +1,14 @@
 .section-title {
     display: block;
 }
+
+.default-tag {
+    display: inline-block;
+    margin-left: 12rpx;
+    padding: 2rpx 12rpx;
+    border-radius: 8rpx;
+    background: #eef4ff;
+    color: var(--brand);
+    font-size: 20rpx;
+    vertical-align: middle;
+}
