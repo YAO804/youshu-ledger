@@ -4,37 +4,33 @@ const store = require('./utils/ledger-store');
 App({
     globalData: {
         appName: '有数记账',
-        storageMode: 'cloud',
     },
 
     onShow(options) {
-        // 完整 options 必须先交给 SDK 处理 WorkBuddy 小程序授权回调，
-        // 再执行任何登录门禁或受保护查询。
-        this.authReady = (async () => {
-            const callback = await cloud.auth.handleWorkBuddyMiniProgramCallback(options);
-            if (callback.error) return callback;
-            return cloud.auth.getSession();
-        })();
+        // 完整 options 先交给 SDK 处理 WorkBuddy 小程序原生授权回调。
+        // 不阻塞启动：没有回调时 SDK 也会安全返回。
+        if (typeof cloud.auth.handleWorkBuddyMiniProgramCallback !== 'function') return;
+        Promise.resolve(cloud.auth.handleWorkBuddyMiniProgramCallback(options))
+            .then(() => {
+                store.resetMode();
+                this.readyPromise = null;
+            })
+            .catch(() => {});
     },
 
+    // 两种模式都能初始化成功：云端模式走云 init，本地试用模式走本地 init。
     ensureReady() {
-        if (!this.authReady) {
-            this.authReady = cloud.auth.getSession();
-        }
         if (!this.readyPromise) {
-            this.readyPromise = (async () => {
-                const session = await this.authReady;
-                if (!session || session.error || !session.data) {
-                    return { data: null, error: { code: 'UNAUTHENTICATED', message: '请先登录' } };
-                }
-                return store.init();
-            })();
+            this.readyPromise = store.init().then(
+                (res) => res,
+                (e) => ({ data: null, error: { code: 'INIT_FAILED', message: (e && e.message) || '初始化失败' } })
+            );
         }
         return this.readyPromise;
     },
 
     resetSession() {
-        this.authReady = null;
+        store.resetMode();
         this.readyPromise = null;
     },
 });

@@ -35,7 +35,7 @@ Page({
     async onShow() {
         const ready = await getApp().ensureReady();
         if (ready.error) {
-            wx.reLaunch({ url: '/pages/login/login' });
+            wx.showToast({ title: ready.error.message || '初始化失败', icon: 'none' });
             return;
         }
         await this.refresh();

@@ -74,8 +74,9 @@ const mockCloud = {
 
 const originalLoad = Module._load;
 Module._load = function (request, parent) {
-    if (request === './cloud' && parent && /ledger-store\.js$/.test(parent.filename)) {
-        return { cloud: mockCloud };
+    if (request === './cloud' && parent && parent.filename
+        && parent.filename.indexOf(path.join(root, 'utils') + path.sep) === 0) {
+        return { cloud: mockCloud, cloudAvailable: true, cloudError: null };
     }
     return originalLoad.apply(this, arguments);
 };
@@ -172,6 +173,30 @@ function dataOf(result) {
 
     dataOf(await store.resetAll());
     check('清空后归零', dataOf(await store.getMonthOverview(month)).recordCount === 0);
+
+    // 未登录：门面应自动落到本地试用模式，且完全不发云请求
+    mockCloud.auth.getSession = async () => ({ data: null, error: null });
+    store.resetMode();
+    const localMemory = {};
+    global.wx = {
+        getStorageSync: (k) => (Object.prototype.hasOwnProperty.call(localMemory, k) ? localMemory[k] : ''),
+        setStorageSync: (k, v) => { localMemory[k] = v; },
+        removeStorageSync: (k) => { delete localMemory[k]; },
+    };
+    check('未登录自动进入本地试用模式', (await store.getMode()) === 'local');
+    dataOf(await store.init());
+    const localAccounts = dataOf(await store.getAccounts());
+    check('本地模式自带 4 个默认账户', localAccounts.length === 4, localAccounts.length);
+    const localCats = dataOf(await store.getCategories('expense'));
+    check('本地模式自带默认分类', localCats.length === 10, localCats.length);
+    dataOf(await store.createRecord({
+        type: 'expense', amountCents: 2000, categoryId: localCats[0].id,
+        accountId: localAccounts[0].id, note: '免登录记一笔', occurredAt: month + '-08',
+    }));
+    const localOverview = dataOf(await store.getMonthOverview(month));
+    check('未登录也能记账', localOverview.recordCount === 1, localOverview.recordCount);
+    check('未登录账目金额正确', localOverview.expenseText === '20.00', localOverview.expenseText);
+    dataOf(await store.resetAll());
 
     console.log('\nTOTAL PASS ' + passed);
 })().catch((e) => {
