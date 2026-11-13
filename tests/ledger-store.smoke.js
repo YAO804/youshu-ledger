@@ -196,7 +196,16 @@ function dataOf(result) {
     const localOverview = dataOf(await store.getMonthOverview(month));
     check('未登录也能记账', localOverview.recordCount === 1, localOverview.recordCount);
     check('未登录账目金额正确', localOverview.expenseText === '20.00', localOverview.expenseText);
-    dataOf(await store.resetAll());
+
+    // 登录后把本地试用账目同步到云端
+    mockCloud.auth.getSession = async () => ({ data: { user: { id: 'smoke-user' } }, error: null });
+    store.resetMode();
+    check('登录后切回云端模式', (await store.getMode()) === 'cloud');
+    const migrated = dataOf(await store.migrateLocalToCloud());
+    check('本地账目已上传到云端', migrated.migrated === 1, migrated);
+    check('云端能读到迁移后的账目', dataOf(await store.getMonthOverview(month)).recordCount === 1);
+    check('迁移后本地数据已清空', localMemory.youshu_ledger_v1 === undefined, Object.keys(localMemory));
+    check('重复迁移不会重复导入', dataOf(await store.migrateLocalToCloud()).migrated === 0);
 
     console.log('\nTOTAL PASS ' + passed);
 })().catch((e) => {

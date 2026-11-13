@@ -111,10 +111,10 @@ const profileAccess = makeAccess(
 
 function defaultAccounts() {
     return [
+        { name: '默认账户', type: 'cash', initialBalance: 0 },
         { name: '微信', type: 'wechat', initialBalance: 0 },
         { name: '支付宝', type: 'alipay', initialBalance: 0 },
         { name: '银行卡', type: 'bank', initialBalance: 0 },
-        { name: '现金', type: 'cash', initialBalance: 0 },
     ];
 }
 

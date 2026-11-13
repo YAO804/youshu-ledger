@@ -14,10 +14,10 @@ function uid(prefix) {
 
 function defaultAccounts() {
     return [
+        { id: 'acc_default', name: '默认账户', type: 'cash', initialBalance: 0 },
         { id: 'acc_wechat', name: '微信', type: 'wechat', initialBalance: 0 },
         { id: 'acc_alipay', name: '支付宝', type: 'alipay', initialBalance: 0 },
         { id: 'acc_bank', name: '银行卡', type: 'bank', initialBalance: 0 },
-        { id: 'acc_cash', name: '现金', type: 'cash', initialBalance: 0 },
     ];
 }
 
@@ -731,7 +731,23 @@ async function resetAll() {
     return ok({ reset: true });
 }
 
+// 门面在登录成功后用它们把本地试用数据搬到云端。
+function snapshot() {
+    return JSON.parse(JSON.stringify(load()));
+}
+
+function clearLocal() {
+    try {
+        wx.removeStorageSync(STORAGE_KEY);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 module.exports = {
+    snapshot,
+    clearLocal,
     init,
     getMonthOverview,
     getStats,
