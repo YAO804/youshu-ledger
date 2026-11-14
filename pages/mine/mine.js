@@ -1,15 +1,16 @@
 const store = require('../../utils/ledger-store');
-const { cloudAvailable } = require('../../utils/cloud');
+
+const SHARED = store.storageMode === 'shared';
 
 Page({
     data: {
         avatarText: '?',
         nicknameInput: '',
         recordCount: 0,
-        mode: 'local',
-        modeText: '本地试用',
-        notice: '',
-        cloudAvailable: !!cloudAvailable,
+        storageText: SHARED ? '两人共享' : '本机账本',
+        notice: SHARED
+            ? '两个人打开就是同一本账，不用注册、不用登录。清空会删除共享账本的全部记录，操作前建议先导出 CSV 备份。'
+            : '云服务组件未加载，账目暂存在本机。清空会删除本机全部记录，操作前建议先导出 CSV 备份。',
         menuGroups: [
             {
                 key: 'basic',
@@ -47,17 +48,6 @@ Page({
     },
 
     async refresh() {
-        const mode = await store.getMode();
-        const isCloud = mode === store.MODE_CLOUD;
-        this.setData({
-            mode,
-            isCloud,
-            isLocal: !isCloud,
-            modeText: isCloud ? '云端同步' : '本地试用',
-            notice: isCloud
-                ? '账目保存在云端，仅当前登录账号可见。清空数据会删除云端全部记录，操作前建议先导出 CSV 备份。'
-                : '无需注册即可记账，账目保存在本机。以后登录会把试用账目同步到云端；卸载或清缓存前请先导出 CSV 备份。',
-        });
         const { data, error } = await store.getProfile();
         if (error) {
             wx.showToast({ title: error.message, icon: 'none' });
@@ -96,30 +86,11 @@ Page({
         });
     },
 
-    onGoLogin() {
-        wx.navigateTo({
-            url: '/pages/login/login',
-            fail: () => wx.showToast({ title: '登录页暂不可用', icon: 'none' }),
-        });
-    },
-
-    async onSignOut() {
-        const { cloud } = require('../../utils/cloud');
-        const { error } = await cloud.auth.signOut();
-        if (error) {
-            wx.showToast({ title: error.message || '退出失败', icon: 'none' });
-            return;
-        }
-        getApp().resetSession();
-        wx.showToast({ title: '已退出，回到本地试用', icon: 'none' });
-        setTimeout(() => wx.switchTab({ url: '/pages/index/index' }), 600);
-    },
-
     onReset() {
         wx.showModal({
             title: '清空全部数据',
-            content: this.data.mode === store.MODE_CLOUD
-                ? '所有账目、账户、分类、预算和周期规则都会从云端删除，且无法恢复。建议先导出备份。确认清空？'
+            content: SHARED
+                ? '共享账本里的所有账目、账户、分类、预算和周期规则都会被删除，且无法恢复。建议先导出备份。确认清空？'
                 : '本机所有账目、账户、分类、预算和周期规则都会被删除，且无法恢复。建议先导出备份。确认清空？',
             confirmText: '确认清空',
             confirmColor: '#d9534f',

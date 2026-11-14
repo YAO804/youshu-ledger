@@ -3,7 +3,7 @@
         <view class="avatar">{{avatarText}}</view>
         <view class="profile-info">
             <input class="nickname-input" placeholder="设置昵称" value="{{nicknameInput}}" bindinput="onNicknameInput" />
-            <text class="profile-desc">共 {{recordCount}} 笔账目 · {{modeText}}</text>
+            <text class="profile-desc">共 {{recordCount}} 笔账目 · {{storageText}}</text>
         </view>
         <view class="save-nick" bindtap="onSaveNickname">保存</view>
     </view>
@@ -17,10 +17,6 @@
             <text class="row-value">›</text>
         </view>
     </view>
-
-    <view wx:if="{{isLocal && cloudAvailable}}" class="signout-btn" bindtap="onGoLogin">登录并把试用账目同步到云端</view>
-    <view wx:if="{{isLocal && !cloudAvailable}}" class="notice">云服务组件未加载，当前可继续本地试用，暂不能登录同步。</view>
-    <view wx:if="{{isCloud}}" class="signout-btn" bindtap="onSignOut">退出登录，回到本地试用</view>
 
     <view class="danger-btn" bindtap="onReset">清空全部数据</view>
 </view>

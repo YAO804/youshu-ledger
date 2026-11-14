@@ -125,20 +125,9 @@ function defaultCategories() {
     return rows;
 }
 
-async function requireSession() {
-    try {
-        const { data: session, error } = await cloud.auth.getSession();
-        if (error) return fail(error.kind || 'UNAUTHENTICATED', error.message || '登录状态无效，请重新登录');
-        if (!session) return fail('UNAUTHENTICATED', '请先登录');
-        return ok(session);
-    } catch (e) {
-        return fail('CLIENT_EXCEPTION', (e && e.message) || '登录状态检查失败');
-    }
-}
-
+// 共享账本：不需要账号。匿名请求的 auth.uid() 恒为同一个值，
+// 因此两个人打开小程序读写的就是同一份数据（RLS 仍由 owner_id 兜底）。
 async function loadState() {
-    const gate = await requireSession();
-    if (gate.error) return gate;
     const results = await Promise.all([
         accountAccess.list(), categoryAccess.list(), recordAccess.list(),
         budgetAccess.list(), ruleAccess.list(), profileAccess.list(),
@@ -595,8 +584,6 @@ async function getBudgets(month) {
 }
 
 async function setBudget(payload) {
-    const gate = await requireSession();
-    if (gate.error) return gate;
     const amount = Number(payload.amountCents);
     if (!amount || amount <= 0) return fail('INVALID_AMOUNT', '预算金额必须大于 0');
     const month = payload.month || currentMonth();
@@ -788,8 +775,6 @@ async function importCsv(text) {
 }
 
 async function resetAll() {
-    const gate = await requireSession();
-    if (gate.error) return gate;
     for (const table of TABLES) {
         const { error } = await cloud.database.from(table).delete().gte('id', 0).select('id');
         if (error) return fail(error.code || 'RESET_FAILED', error.message || '清空失败');

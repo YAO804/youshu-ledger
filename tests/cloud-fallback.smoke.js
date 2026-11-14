@@ -1,10 +1,11 @@
-// 回归测试：预览器 / H5 模拟环境下云 SDK 不可用或能力残缺时，
-// utils/cloud.js 必须降级为完整 stub，且不能让 App 生命周期里出现「xxx is not a function」。
+// 回归测试：云 SDK 不可用或能力残缺时，utils/cloud.js 必须安全降级，
+// 数据层门面据此退回本机账本，应用不会白屏。
 const path = require('path');
 const Module = require('module');
 
 const root = path.resolve(__dirname, '..');
 const cloudPath = path.join(root, 'utils/cloud.js');
+const storePath = path.join(root, 'utils/ledger-store.js');
 const SDK_ID = '@tencent-ai/workbuddy-cloud-sdk/miniprogram';
 
 const minimalWx = {
@@ -35,15 +36,25 @@ function loadCloud(sdkModule) {
     }
 }
 
-function fullClient() {
-    return {
-        auth: {
-            getSession: async () => ({ data: null, error: null }),
-            handleWorkBuddyMiniProgramCallback: async () => ({ data: null, error: null }),
-            signOut: async () => ({ error: null }),
-        },
-        database: { from() { return {}; } },
+function loadFacade(fakeCloud, available) {
+    delete require.cache[storePath];
+    const originalLoad = Module._load;
+    Module._load = function (request, parent) {
+        if (request === './cloud' && parent && parent.filename
+            && parent.filename.indexOf(path.join(root, 'utils') + path.sep) === 0) {
+            return { cloud: fakeCloud, cloudAvailable: available, cloudError: null };
+        }
+        return originalLoad.apply(this, arguments);
     };
+    try {
+        return require(storePath);
+    } finally {
+        Module._load = originalLoad;
+    }
+}
+
+function fullClient() {
+    return { database: { from() { return {}; } } };
 }
 
 let passed = 0;
@@ -60,21 +71,21 @@ function check(name, condition) {
 // 1. SDK 模块根本不存在（未构建 miniprogram_npm）
 const missing = loadCloud(null);
 check('SDK 缺失时降级', missing.cloudAvailable === false);
-check('SDK 缺失时 getSession 可用', typeof missing.cloud.auth.getSession === 'function');
-check('SDK 缺失时授权回调方法可用', typeof missing.cloud.auth.handleWorkBuddyMiniProgramCallback === 'function');
+check('SDK 缺失时数据面方法仍在', typeof missing.cloud.database.from === 'function');
 
-// 2. SDK 能创建客户端，但缺少小程序专属授权方法（预览器 / 残缺 SDK）
+// 2. 客户端缺少 database.from
 const partial = loadCloud({
-    createMiniProgramWorkBuddyCloud: () => ({
-        auth: { getSession: async () => ({ data: null, error: null }) },
-        database: { from() { return {}; } },
-    }),
+    createMiniProgramWorkBuddyCloud: () => ({ auth: {} }),
 });
 check('能力残缺时降级', partial.cloudAvailable === false);
-check('能力残缺时授权回调方法仍可用', typeof partial.cloud.auth.handleWorkBuddyMiniProgramCallback === 'function');
+check('能力残缺时数据面方法仍在', typeof partial.cloud.database.from === 'function');
 
-// 3. 完整客户端应保持可用
+// 3. 完整客户端保持可用
 const complete = loadCloud({ createMiniProgramWorkBuddyCloud: fullClient });
 check('完整客户端保持可用', complete.cloudAvailable === true);
+
+// 4. 门面按可用性选择共享账本或本机账本
+check('SDK 缺失时门面退回本机账本', loadFacade(missing.cloud, false).storageMode === 'local');
+check('SDK 可用时门面使用共享账本', loadFacade(fullClient(), true).storageMode === 'shared');
 
 console.log('\nTOTAL PASS ' + passed);

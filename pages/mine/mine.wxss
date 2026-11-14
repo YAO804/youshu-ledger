@@ -67,12 +67,3 @@
     text-align: center;
 }
 
-.signout-btn {
-    margin-top: 20rpx;
-    padding: 24rpx;
-    border-radius: 16rpx;
-    background: #ffffff;
-    color: var(--text-secondary);
-    font-size: 28rpx;
-    text-align: center;
-}

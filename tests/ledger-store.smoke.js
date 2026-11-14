@@ -64,10 +64,13 @@ function makeQuery(table) {
     return q;
 }
 
+let sessionChecks = 0;
 const mockCloud = {
     auth: {
-        getSession: async () => ({ data: { user: { id: 'smoke-user' } }, error: null }),
-        signOut: async () => ({ error: null }),
+        getSession: async () => {
+            sessionChecks += 1;
+            return { data: { user: { id: 'smoke-user' } }, error: null };
+        },
     },
     database: { from: makeQuery },
 };
@@ -174,38 +177,9 @@ function dataOf(result) {
     dataOf(await store.resetAll());
     check('清空后归零', dataOf(await store.getMonthOverview(month)).recordCount === 0);
 
-    // 未登录：门面应自动落到本地试用模式，且完全不发云请求
-    mockCloud.auth.getSession = async () => ({ data: null, error: null });
-    store.resetMode();
-    const localMemory = {};
-    global.wx = {
-        getStorageSync: (k) => (Object.prototype.hasOwnProperty.call(localMemory, k) ? localMemory[k] : ''),
-        setStorageSync: (k, v) => { localMemory[k] = v; },
-        removeStorageSync: (k) => { delete localMemory[k]; },
-    };
-    check('未登录自动进入本地试用模式', (await store.getMode()) === 'local');
-    dataOf(await store.init());
-    const localAccounts = dataOf(await store.getAccounts());
-    check('本地模式自带 4 个默认账户', localAccounts.length === 4, localAccounts.length);
-    const localCats = dataOf(await store.getCategories('expense'));
-    check('本地模式自带默认分类', localCats.length === 10, localCats.length);
-    dataOf(await store.createRecord({
-        type: 'expense', amountCents: 2000, categoryId: localCats[0].id,
-        accountId: localAccounts[0].id, note: '免登录记一笔', occurredAt: month + '-08',
-    }));
-    const localOverview = dataOf(await store.getMonthOverview(month));
-    check('未登录也能记账', localOverview.recordCount === 1, localOverview.recordCount);
-    check('未登录账目金额正确', localOverview.expenseText === '20.00', localOverview.expenseText);
-
-    // 登录后把本地试用账目同步到云端
-    mockCloud.auth.getSession = async () => ({ data: { user: { id: 'smoke-user' } }, error: null });
-    store.resetMode();
-    check('登录后切回云端模式', (await store.getMode()) === 'cloud');
-    const migrated = dataOf(await store.migrateLocalToCloud());
-    check('本地账目已上传到云端', migrated.migrated === 1, migrated);
-    check('云端能读到迁移后的账目', dataOf(await store.getMonthOverview(month)).recordCount === 1);
-    check('迁移后本地数据已清空', localMemory.youshu_ledger_v1 === undefined, Object.keys(localMemory));
-    check('重复迁移不会重复导入', dataOf(await store.migrateLocalToCloud()).migrated === 0);
+    // 共享账本：全流程不应出现任何登录态检查
+    check('共享账本模式', store.storageMode === 'shared', store.storageMode);
+    check('全程未检查登录态', sessionChecks === 0, sessionChecks);
 
     console.log('\nTOTAL PASS ' + passed);
 })().catch((e) => {
