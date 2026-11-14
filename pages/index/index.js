@@ -8,12 +8,27 @@ Page({
         incomeText: '0.00',
         expenseText: '0.00',
         balanceText: '0.00',
+        balanceNegative: false,
         recordCount: 0,
-        records: [],
-        viewState: 'loading',
-        errorText: '',
+        hasData: false,
+        hasExpense: false,
+        metrics: [],
+        topCategory: { name: '暂无支出', amountText: '0.00', percentText: '0%' },
+        categoryRows: [],
+        categoryTotal: 0,
+        categoryStack: [],
+        trendRows: [],
+        budgetRows: [],
+        accountRows: [],
+        recentRecords: [],
+        allRecords: [],
+        displayRecords: [],
+        showAll: false,
+        toggleText: '',
         budgetHint: '',
         budgetOver: false,
+        viewState: 'loading',
+        errorText: '',
     },
 
     onLoad() {
@@ -31,22 +46,16 @@ Page({
 
     async refresh() {
         this.setData({ viewState: 'loading' });
-        const { data, error } = await store.getMonthOverview(this.data.month);
+        const { data, error } = await store.getDashboard(this.data.month);
         if (error) {
             this.setData({ viewState: 'error', errorText: error.message });
             return;
         }
-        this.setData({
-            viewState: 'ready',
-            monthLabel: data.month,
-            incomeText: data.incomeText,
-            expenseText: data.expenseText,
-            balanceText: data.balanceText,
-            recordCount: data.recordCount,
-            records: data.records,
-            budgetHint: data.budgetHint,
-            budgetOver: data.budgetHint.indexOf('超预算') >= 0,
-        });
+        this.setData(Object.assign({ viewState: 'ready' }, data, {
+            showAll: false,
+            displayRecords: data.recentRecords,
+            toggleText: data.recordCount > 5 ? '查看全部 ' + data.recordCount + ' 笔' : '',
+        }));
     },
 
     onPrevMonth() {
@@ -55,6 +64,19 @@ Page({
 
     onNextMonth() {
         this.setData({ month: shiftMonth(this.data.month, 1) }, () => this.refresh());
+    },
+
+    onToggleRecords() {
+        const showAll = !this.data.showAll;
+        this.setData({
+            showAll,
+            displayRecords: showAll ? this.data.allRecords : this.data.recentRecords,
+            toggleText: showAll ? '收起' : '查看全部 ' + this.data.recordCount + ' 笔',
+        });
+    },
+
+    onGoStats() {
+        wx.switchTab({ url: '/pages/stats/stats' });
     },
 
     onDeleteRecord(event) {

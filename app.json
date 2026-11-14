@@ -25,7 +25,7 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "明细"
+        "text": "概览"
       },
       {
         "pagePath": "pages/add/add",

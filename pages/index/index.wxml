@@ -1,42 +1,116 @@
 <view class="page">
     <view class="card month-bar">
         <view class="month-btn" bindtap="onPrevMonth">‹</view>
-        <text class="month-label">{{monthLabel}}</text>
+        <text class="month-label">{{monthLabel || month}}</text>
         <view class="month-btn" bindtap="onNextMonth">›</view>
     </view>
 
-    <view class="card summary">
-        <text class="summary-label">本月结余</text>
-        <text class="summary-amount">¥ {{balanceText}}</text>
-        <view class="summary-row">
-            <view class="summary-cell">
-                <text class="summary-cell-label">收入</text>
-                <text class="summary-cell-value income">¥ {{incomeText}}</text>
-            </view>
-            <view class="summary-cell">
-                <text class="summary-cell-label">支出</text>
-                <text class="summary-cell-value expense">¥ {{expenseText}}</text>
-            </view>
-        </view>
-    </view>
-
-    <view wx:if="{{budgetHint}}" class="budget-hint {{budgetOver ? 'over' : ''}}">{{budgetHint}}</view>
-
-    <view class="section-title">
-        <text>账目明细</text>
-        <text class="section-hint">共 {{recordCount}} 笔 · 长按可删除</text>
-    </view>
-
-    <view wx:if="{{viewState === 'loading'}}" class="state">正在加载账目…</view>
+    <view wx:if="{{viewState === 'loading'}}" class="state">正在加载概览…</view>
     <view wx:elif="{{viewState === 'error'}}" class="state">{{errorText}}</view>
-    <view wx:elif="{{records.length === 0}}" class="state">本月还没有账目，点「记一笔」开始记录</view>
-    <view wx:else class="card">
-        <view class="row record-row" wx:for="{{records}}" wx:key="id" data-id="{{item.id}}" bindlongpress="onDeleteRecord">
-            <view class="record-main">
-                <text class="record-category">{{item.categoryName}}</text>
-                <text class="record-meta">{{item.dateText}} · {{item.accountName}} {{item.noteText}}</text>
+
+    <block wx:else>
+        <view class="card hero-card">
+            <text class="hero-label">本月结余</text>
+            <text class="hero-amount {{balanceNegative ? 'expense' : ''}}">¥ {{balanceText}}</text>
+            <view class="hero-row">
+                <view class="hero-cell">
+                    <text class="hero-cell-label">收入</text>
+                    <text class="hero-cell-value income">¥ {{incomeText}}</text>
+                </view>
+                <view class="hero-cell">
+                    <text class="hero-cell-label">支出</text>
+                    <text class="hero-cell-value expense">¥ {{expenseText}}</text>
+                </view>
             </view>
-            <text class="record-amount {{item.type === 'income' ? 'income' : 'expense'}}">{{item.amountText}}</text>
         </view>
-    </view>
+
+        <view class="metric-grid">
+            <view class="metric-card" wx:for="{{metrics}}" wx:key="key">
+                <text class="metric-label">{{item.label}}</text>
+                <text class="metric-value {{item.tone}}">{{item.value}}</text>
+            </view>
+        </view>
+
+        <view wx:if="{{budgetHint}}" class="budget-hint {{budgetOver ? 'over' : ''}}">{{budgetHint}}</view>
+
+        <view class="card">
+            <view class="card-head">
+                <text class="section-title">支出构成</text>
+                <text class="more" bindtap="onGoStats">完整统计 ›</text>
+            </view>
+            <view wx:if="{{!hasExpense}}" class="state">本月还没有支出，点「记一笔」开始记录</view>
+            <block wx:else>
+                <view class="stack">
+                    <view wx:for="{{categoryStack}}" wx:key="id" class="stack-seg" style="width: {{item.percent}}%; background: {{item.color}}"></view>
+                </view>
+                <view class="cat-row" wx:for="{{categoryRows}}" wx:key="id">
+                    <view class="cat-head">
+                        <view class="cat-name">
+                            <view class="dot" style="background: {{item.color}}"></view>
+                            <text>{{item.name}}</text>
+                        </view>
+                        <text class="row-value">¥ {{item.amountText}} · {{item.percentText}}</text>
+                    </view>
+                    <view class="cat-track">
+                        <view class="cat-fill" style="width: {{item.barWidth}}%; background: {{item.color}}"></view>
+                    </view>
+                </view>
+                <view wx:if="{{categoryTotal > 5}}" class="cat-more">另有 {{categoryTotal - 5}} 个分类，可在「统计」查看</view>
+            </block>
+        </view>
+
+        <view class="card">
+            <text class="section-title">近 6 个月收支</text>
+            <view class="legend">
+                <text class="legend-item income">■ 收入</text>
+                <text class="legend-item expense">■ 支出</text>
+            </view>
+            <view class="trend-chart">
+                <view class="trend-col" wx:for="{{trendRows}}" wx:key="id">
+                    <view class="trend-bars">
+                        <view class="bar income-bar" style="height: {{item.incomeHeight}}rpx"></view>
+                        <view class="bar expense-bar" style="height: {{item.expenseHeight}}rpx"></view>
+                    </view>
+                    <text class="trend-label">{{item.label}}</text>
+                </view>
+            </view>
+        </view>
+
+        <view wx:if="{{accountRows.length > 0}}" class="card">
+            <text class="section-title">账户余额</text>
+            <view class="acct-row" wx:for="{{accountRows}}" wx:key="id">
+                <text class="row-label">{{item.name}}</text>
+                <text class="row-value">¥ {{item.balanceText}}</text>
+            </view>
+        </view>
+
+        <view wx:if="{{budgetRows.length > 0}}" class="card">
+            <text class="section-title">预算进度</text>
+            <view class="cat-row" wx:for="{{budgetRows}}" wx:key="id">
+                <view class="cat-head">
+                    <text class="row-label">{{item.name}}</text>
+                    <text class="row-value {{item.over ? 'expense' : ''}}">{{item.usedText}} / {{item.limitText}}</text>
+                </view>
+                <view class="cat-track">
+                    <view class="cat-fill {{item.over ? 'over' : ''}}" style="width: {{item.percent}}%"></view>
+                </view>
+            </view>
+        </view>
+
+        <view class="card">
+            <view class="card-head">
+                <text class="section-title">最近账目</text>
+                <text wx:if="{{toggleText}}" class="more" bindtap="onToggleRecords">{{toggleText}}</text>
+            </view>
+            <view wx:if="{{!hasData}}" class="state">本月还没有账目，点「记一笔」开始记录</view>
+            <view wx:if="{{hasData}}" class="row record-row" wx:for="{{displayRecords}}" wx:key="id" data-id="{{item.id}}" bindlongpress="onDeleteRecord">
+                <view class="record-main">
+                    <text class="record-category">{{item.categoryName}}</text>
+                    <text class="record-meta">{{item.dateText}} · {{item.accountName}} {{item.noteText}}</text>
+                </view>
+                <text class="record-amount {{item.type === 'income' ? 'income' : 'expense'}}">{{item.amountText}}</text>
+            </view>
+            <text wx:if="{{hasData}}" class="hint-text">长按账目可删除</text>
+        </view>
+    </block>
 </view>

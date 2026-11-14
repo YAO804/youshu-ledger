@@ -4,6 +4,7 @@
 const shared = require('./ledger-store.cloud');
 const local = require('./ledger-store.local');
 const { cloudAvailable } = require('./cloud');
+const { buildDashboard } = require('./dashboard');
 
 const impl = cloudAvailable ? shared : local;
 
@@ -18,8 +19,24 @@ const METHODS = [
     'exportCsv', 'importCsv', 'resetAll',
 ];
 
+// 首页概览：一次聚合月汇总、统计与账户余额，页面只负责渲染。
+async function getDashboard(month) {
+    const results = await Promise.all([
+        facade.getMonthOverview(month),
+        facade.getStats(month),
+        facade.getAccounts(),
+    ]);
+    const broken = results.find((r) => r && r.error);
+    if (broken) return broken;
+    return {
+        data: buildDashboard(results[0].data, results[1].data, results[2].data, month),
+        error: null,
+    };
+}
+
 const facade = {
     storageMode: cloudAvailable ? 'shared' : 'local',
+    getDashboard,
 };
 
 METHODS.forEach((name) => {
