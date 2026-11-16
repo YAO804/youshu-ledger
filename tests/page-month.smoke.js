@@ -48,7 +48,11 @@ function createInstance(config, month) {
         if (typeof cb === 'function') cb();
     };
     inst.refreshCount = 0;
-    inst.refresh = async () => { inst.refreshCount += 1; };
+    inst.refresh = async () => {
+        inst.refreshCount += 1;
+        // 真实页面在 refresh 之后会把趋势图滚到选中月，stub 也要走这一步
+        if (typeof inst.scrollTrendTo === 'function') inst.scrollTrendTo(inst.data.month);
+    };
     return inst;
 }
 
@@ -72,8 +76,11 @@ async function runPage(page) {
     fresh.onLoad();
     check(page.name + '：首次进入显示当前月', fresh.data.month === THIS_MONTH, fresh.data.month);
     check(page.name + '：首次进入月份标签同步', fresh.data.monthLabel === THIS_MONTH, fresh.data.monthLabel);
+
+    // 首次的滚动目标必须等趋势数据落地后才设得上（列表为空时 id 还不存在）
+    await fresh.onShow();
     if (page.hasScrollTarget) {
-        check(page.name + '：首次进入带趋势定位目标',
+        check(page.name + '：首次加载后趋势图滚到当前月',
             fresh.data.scrollTarget === 'trend-' + THIS_MONTH, fresh.data.scrollTarget);
     }
 
@@ -115,13 +122,14 @@ async function runPage(page) {
     check(page.name + '：跳转失败后不影响下次重置', failedNav.data.month === THIS_MONTH, failedNav.data.month);
     navigateFails = false;
 
-    // 已经是当前月时不做多余写入
+    // 已经是当前月时不该再重写 month（趋势图滚动是另一回事，会有两次 scrollTarget 写入）
     const noop = createInstance(config, THIS_MONTH);
-    let setDataCount = 0;
+    const patches = [];
     const rawSetData = noop.setData;
-    noop.setData = (patch, cb) => { setDataCount += 1; rawSetData(patch, cb); };
+    noop.setData = (patch, cb) => { patches.push(patch); rawSetData(patch, cb); };
     await noop.onShow();
-    check(page.name + '：已是当前月时不重复 setData', setDataCount === 0, setDataCount);
+    check(page.name + '：已是当前月时不重写 month',
+        patches.every((patch) => !('month' in patch)), patches);
     check(page.name + '：已是当前月仍会刷新', noop.refreshCount === 1, noop.refreshCount);
 
     // 箭头翻月份仍可用
@@ -138,10 +146,18 @@ async function runPage(page) {
         const tapSwitch = createInstance(config, THIS_MONTH);
         tapSwitch.onTrendTap({ currentTarget: { dataset: { month: PAST } } });
         check(page.name + '：点柱子切到该月', tapSwitch.data.month === PAST, tapSwitch.data.month);
-        check(page.name + '：点柱子不触发滚动', tapSwitch.data.scrollTarget === '', tapSwitch.data.scrollTarget);
+        check(page.name + '：点柱子后滚到该柱子',
+            tapSwitch.data.scrollTarget === 'trend-' + PAST, tapSwitch.data.scrollTarget);
         check(page.name + '：点柱子会刷新一次', tapSwitch.refreshCount === 1, tapSwitch.refreshCount);
+
         tapSwitch.onTrendTap({ currentTarget: { dataset: { month: PAST } } });
         check(page.name + '：重复点同一根柱子不再刷新', tapSwitch.refreshCount === 1, tapSwitch.refreshCount);
+
+        // 用户手动拖走之后，同月份的刷新不该把图拽回来（这里只刷新，不经过 onShow）
+        tapSwitch.setData({ scrollTarget: '' });
+        await tapSwitch.refresh();
+        check(page.name + '：同月份刷新不打扰拖动',
+            tapSwitch.data.scrollTarget === '', tapSwitch.data.scrollTarget);
     }
 }
 

@@ -38,7 +38,7 @@ Page({
     resetToCurrentMonth() {
         const month = currentMonth();
         if (this.data.month === month) return;
-        this.setData({ month, monthLabel: month, scrollTarget: 'trend-' + month });
+        this.setData({ month, monthLabel: month });
     },
 
     async refresh() {
@@ -54,29 +54,39 @@ Page({
             trendRows: data.trendRows,
             categoryRows: data.categoryRows,
             budgetRows: data.budgetRows,
+        }, () => this.scrollTrendTo(this.data.month));
+    },
+
+    // scroll-into-view 只在属性值变化时才滚动，而首次渲染时 trendRows 还是空的、
+    // 目标 id 根本不存在，所以在 refresh 里设值那次等于白设，等数据渲染完又不会再触发。
+    // 结果就是图停在窗口最左边（去年 12 月），当月被藏在右侧要手动拖才能看到。
+    // 这里在数据落地之后「清空 → 重新赋值」一次，强制它重新找一次目标元素。
+    scrollTrendTo(month) {
+        const target = 'trend-' + month;
+        if (!month || this.scrolledTarget === target) return;
+        this.scrolledTarget = target;
+        this.setData({ scrollTarget: '' }, () => {
+            this.setData({ scrollTarget: target });
         });
     },
 
-    // 切月份统一走这里：fromTrend 为 true 时不需要滚动，
-    // 因为用户点的是已经看得见的那根柱子；箭头可能翻到窗口外，得滚过去。
-    switchMonth(next, fromTrend) {
+    // 切月份统一走这里，滚动交给 refresh 之后的 scrollTrendTo。
+    switchMonth(next) {
         if (!next || next === this.data.month) return;
-        const patch = { month: next, monthLabel: next };
-        if (!fromTrend) patch.scrollTarget = 'trend-' + next;
-        this.setData(patch, () => this.refresh());
+        this.setData({ month: next, monthLabel: next }, () => this.refresh());
     },
 
     onPrevMonth() {
-        this.switchMonth(shiftMonth(this.data.month, -1), false);
+        this.switchMonth(shiftMonth(this.data.month, -1));
     },
 
     onNextMonth() {
-        this.switchMonth(shiftMonth(this.data.month, 1), false);
+        this.switchMonth(shiftMonth(this.data.month, 1));
     },
 
     // 点趋势图里的柱子直接跳到那个月，下面的分类占比、预算都跟着变。
     onTrendTap(event) {
-        this.switchMonth(event.currentTarget.dataset.month, true);
+        this.switchMonth(event.currentTarget.dataset.month);
     },
 
     // 点分类行看这个分类当月的全部明细。
