@@ -107,6 +107,7 @@ node tests/offline-fallback.smoke.js
 node tests/mode-switch.smoke.js
 node tests/sample-data.smoke.js
 node tests/wxml-structure.smoke.js
+node tests/input-height.smoke.js
 ```
 
 - **24 项**概览聚合断言：空态安全、结余率 / 日均 / 最大分类、Top5 与「其他」堆叠条归一化到 100%、配色与条形比例、最近 5 笔截断、负结余标红、透传趋势 / 预算 / 账户。
@@ -116,6 +117,7 @@ node tests/wxml-structure.smoke.js
 - **33 项**模式切换回归：默认云端、尊重已保存的本机偏好、组件缺失时提示构建 npm、探测失败拒绝切换且不写偏好、切换后读写走对实现、降级不覆盖用户偏好。
 - **35 项**样例数据回归：写入条数、本月收支与超支提示、空月份、负结余月、收支平衡月、信用卡负余额、零流水分类、预算超支标记、周期规则启停、重复生成不叠加。
 - **9 个 WXML** 静态回归：禁止 `wx:else` / `wx:elif` 与 `wx:for` 同标签、禁止数组下标表达式。这类错误 H5 预览查不出，只有微信原生编译才报。
+- **10 个 WXSS** 静态回归：给 `input` 设了超过 22px 的字号就必须显式写 `height`。小程序 `input` 默认高度只有 `1.4rem`，只调字号不会撑高盒子，文字会被上下裁掉（记一笔页的金额输入框踩过这个坑）。
 - 微信开发者工具 2.02.2609250 原生编译：`cli build-npm` + `cli preview` 通过，当前包 **331.8 KB**（无新增依赖）；此前自动化运行时确认过 `App()` 注册、页面栈正常、种子 4 账户（首项「默认账户」）+ 15 分类。
 - 数据库侧：6 张表 RLS 开启、6 条 owner-only 策略、`(owner_id, source_key)` 唯一索引、SQL 写入读回成功（验证数据已清理）。
 

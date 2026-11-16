@@ -21,20 +21,31 @@
 
 .amount-row {
     display: flex;
+    min-width: 0;
     align-items: center;
     margin-top: 40rpx;
-    padding-bottom: 8rpx;
+    padding-bottom: 12rpx;
     border-bottom: 1rpx solid #f0f1f3;
 }
 
 .amount-symbol {
-    font-size: 40rpx;
+    flex-shrink: 0;
+    font-size: 44rpx;
+    line-height: 1;
 }
 
+/* 小程序 input 的默认高度是 1.4rem，只调 font-size 不会把它撑高，
+   字号一超过这个高度文字就被上下裁掉，所以必须显式写 height。 */
 .amount-input {
     flex: 1;
+    min-width: 0;
+    height: 100rpx;
+    min-height: 100rpx;
     margin-left: 16rpx;
+    padding: 0;
     font-size: 56rpx;
+    line-height: 100rpx;
+    color: var(--text-primary);
 }
 
 .note-input {
