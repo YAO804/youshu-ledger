@@ -109,43 +109,49 @@
     color: var(--brand);
 }
 
+/* 100% 堆叠条：一眼看清各分类占比，加粗后成为这张卡的主视觉 */
 .stack {
     display: flex;
-    height: 24rpx;
-    margin: 8rpx 0 28rpx;
-    border-radius: 12rpx;
+    height: 32rpx;
+    margin: 8rpx 0 12rpx;
+    border-radius: 16rpx;
     overflow: hidden;
     background: #f0f1f3;
 }
 
 .stack-seg {
+    box-sizing: border-box;
     height: 100%;
 }
 
-.cat-row {
+/* 单行图例：不再重复画每条进度条，改为「色点 + 名称 + 金额 + 占比笔数」 */
+.cat-item {
+    display: flex;
+    min-width: 0;
+    align-items: center;
     padding: 18rpx 0;
+    border-bottom: 1rpx solid #f5f6f8;
+}
+
+.cat-item:last-child {
+    border-bottom: none;
 }
 
 /* 整行可点，进分类明细 */
-.cat-row-hover {
+.cat-item-hover {
     opacity: 0.55;
 }
 
-/* 第一行：分类名 + 金额，金额右对齐、字号略大，是这一行的主角 */
-.cat-top {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-}
-
-.cat-name {
-    display: flex;
-    flex: 1;
-    min-width: 0;
-    align-items: center;
+.dot {
+    flex-shrink: 0;
+    width: 14rpx;
+    height: 14rpx;
+    margin-right: 14rpx;
+    border-radius: 7rpx;
 }
 
 .cat-label {
+    flex: 1;
     min-width: 0;
     font-size: 28rpx;
     overflow-wrap: break-word;
@@ -153,67 +159,65 @@
 
 .cat-amount {
     flex-shrink: 0;
-    margin-left: 16rpx;
+    margin-left: 12rpx;
     font-size: 28rpx;
     font-weight: 500;
     white-space: nowrap;
 }
 
-.cat-chevron {
-    flex-shrink: 0;
-    margin-left: 4rpx;
-    color: #c4c2bb;
-    font-size: 28rpx;
-    line-height: 1;
-}
-
-/* 第二行：进度条 + 占比与笔数，两者同行不抢位置 */
-.cat-bot {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    margin-top: 12rpx;
-}
-
-.dot {
-    flex-shrink: 0;
-    width: 14rpx;
-    height: 14rpx;
-    margin-right: 12rpx;
-    border-radius: 7rpx;
-}
-
-.cat-track {
-    flex: 1;
-    min-width: 0;
-    height: 10rpx;
-    border-radius: 5rpx;
-    overflow: hidden;
-    background: #f0f1f3;
-}
-
-.cat-fill {
-    height: 100%;
-    border-radius: 5rpx;
-    background: var(--brand);
-}
-
-.cat-fill.over {
-    background: var(--expense);
-}
-
+/* 固定宽度 + 右对齐，保证各行占比/笔数成一列对齐 */
 .cat-meta {
     flex-shrink: 0;
-    margin-left: 16rpx;
+    width: 136rpx;
+    margin-left: 14rpx;
+    text-align: right;
     font-size: 22rpx;
     color: var(--text-secondary);
     white-space: nowrap;
+}
+
+.cat-chevron {
+    flex-shrink: 0;
+    margin-left: 6rpx;
+    color: #d5d3cc;
+    font-size: 26rpx;
+    line-height: 1;
 }
 
 .cat-more {
     padding-top: 16rpx;
     font-size: 22rpx;
     color: var(--text-secondary);
+}
+
+/* 预算进度卡仍是「名称+数值 / 进度条」两行结构，沿用 cat-row 系列 */
+.cat-row {
+    padding: 16rpx 0;
+}
+
+.cat-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 26rpx;
+}
+
+.cat-track {
+    height: 12rpx;
+    margin-top: 14rpx;
+    border-radius: 6rpx;
+    overflow: hidden;
+    background: #f0f1f3;
+}
+
+.cat-fill {
+    height: 100%;
+    border-radius: 6rpx;
+    background: var(--brand);
+}
+
+.cat-fill.over {
+    background: var(--expense);
 }
 
 .legend {
@@ -307,8 +311,7 @@
 .hero-cell,
 .metric-card,
 .card-head,
-.cat-top,
-.cat-bot,
+.cat-item,
 .acct-row,
 .record-main {
     min-width: 0;
@@ -344,22 +347,6 @@
 
 .more {
     flex-shrink: 0;
-    white-space: nowrap;
-}
-
-.cat-name {
-    flex: 1;
-    min-width: 0;
-}
-
-.cat-name text {
-    min-width: 0;
-    overflow-wrap: break-word;
-}
-
-.cat-amount {
-    flex-shrink: 0;
-    max-width: 55%;
     white-space: nowrap;
 }
 

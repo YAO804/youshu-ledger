@@ -43,23 +43,14 @@
             <view wx:if="{{!hasExpense}}" class="state">本月还没有支出，点「记一笔」开始记录</view>
             <block wx:else>
                 <view class="stack">
-                    <view wx:for="{{categoryStack}}" wx:key="id" class="stack-seg" style="width: {{item.percent}}%; background: {{item.color}}"></view>
+                    <view wx:for="{{categoryStack}}" wx:key="id" class="stack-seg" style="width: {{item.percent}}%; background: {{item.color}};{{index > 0 ? ' border-left: 3rpx solid #ffffff;' : ''}}"></view>
                 </view>
-                <view class="cat-row" wx:for="{{categoryRows}}" wx:key="id" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onCategoryTap" hover-class="cat-row-hover">
-                    <view class="cat-top">
-                        <view class="cat-name">
-                            <view class="dot" style="background: {{item.color}}"></view>
-                            <text class="cat-label">{{item.name}}</text>
-                        </view>
-                        <text class="cat-amount">¥ {{item.amountText}}</text>
-                        <text class="cat-chevron">›</text>
-                    </view>
-                    <view class="cat-bot">
-                        <view class="cat-track">
-                            <view class="cat-fill" style="width: {{item.barWidth}}%; background: {{item.color}}"></view>
-                        </view>
-                        <text class="cat-meta">{{item.percentText}} · {{item.count}} 笔</text>
-                    </view>
+                <view class="cat-item" wx:for="{{categoryRows}}" wx:key="id" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onCategoryTap" hover-class="cat-item-hover">
+                    <view class="dot" style="background: {{item.color}}"></view>
+                    <text class="cat-label">{{item.name}}</text>
+                    <text class="cat-amount">¥ {{item.amountText}}</text>
+                    <text class="cat-meta">{{item.percentText}} · {{item.count}} 笔</text>
+                    <text class="cat-chevron">›</text>
                 </view>
                 <view wx:if="{{categoryTotal > 5}}" class="cat-more" bindtap="onGoStats">另有 {{categoryTotal - 5}} 个分类，可在「统计」查看 ›</view>
             </block>
