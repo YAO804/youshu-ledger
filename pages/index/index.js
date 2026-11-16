@@ -1,5 +1,6 @@
 const store = require('../../utils/ledger-store');
 const { currentMonth, shiftMonth } = require('../../utils/format');
+const { confirmRemoveRecord } = require('../../utils/record-actions');
 
 Page({
     data: {
@@ -96,22 +97,10 @@ Page({
         });
     },
 
-    onDeleteRecord(event) {
-        const id = event.currentTarget.dataset.id;
-        wx.showModal({
-            title: '删除账目',
-            content: '删除后无法恢复，确认删除？',
-            confirmColor: '#d9534f',
-            success: async (res) => {
-                if (!res.confirm) return;
-                const { error } = await store.removeRecord(id);
-                if (error) {
-                    wx.showToast({ title: error.message, icon: 'none' });
-                    return;
-                }
-                wx.showToast({ title: '已删除', icon: 'success' });
-                await this.refresh();
-            },
-        });
+    async onDeleteRecord(event) {
+        // record-list 组件只抛 { id }，确认与删除统一走 record-actions。
+        const id = event.detail && event.detail.id;
+        const removed = await confirmRemoveRecord(id);
+        if (removed) await this.refresh();
     },
 });

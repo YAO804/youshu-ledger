@@ -1,0 +1,14 @@
+<!-- 账目清单：概览页「最近账目」和记一笔页「最近记录」共用。
+     records 已由页面格式化成 categoryName / dateText / accountName / noteText / amountText。
+     长按只抛事件，删除确认交给页面，组件本身不持有业务状态。 -->
+<view wx:if="{{records.length === 0}}" class="rl-empty">{{empty}}</view>
+<block wx:else>
+    <view class="rl-row" wx:for="{{records}}" wx:key="id" data-id="{{item.id}}" bindlongpress="onLongPress" hover-class="rl-row-hover">
+        <view class="rl-main">
+            <text class="rl-category">{{item.categoryName}}</text>
+            <text class="rl-meta">{{item.dateText}} · {{item.accountName}} {{item.noteText}}</text>
+        </view>
+        <text class="rl-amount {{item.type === 'income' ? 'rl-income' : 'rl-expense'}}">{{item.amountText}}</text>
+    </view>
+</block>
+<text wx:if="{{hint && records.length > 0}}" class="rl-hint">{{hint}}</text>

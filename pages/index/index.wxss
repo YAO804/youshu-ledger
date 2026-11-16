@@ -1,23 +1,12 @@
-/* 云端降级提示：必须完整换行，不能省略 */
-.storage-banner {
-    display: block;
-    margin-bottom: 24rpx;
-    padding: 20rpx 28rpx;
-    border-radius: 16rpx;
-    background: #fff6e5;
-    color: #8a5a00;
-    font-size: 24rpx;
-    line-height: 1.6;
-    overflow-wrap: break-word;
-}
-
 .budget-hint {
-    margin-bottom: 24rpx;
-    padding: 20rpx 28rpx;
+    margin-bottom: 20rpx;
+    padding: 14rpx 24rpx;
     border-radius: 16rpx;
     background: #eaf2ff;
     color: var(--brand);
-    font-size: 26rpx;
+    font-size: 24rpx;
+    line-height: 1.6;
+    overflow-wrap: break-word;
 }
 
 .budget-hint.over {
@@ -25,82 +14,100 @@
     color: var(--expense);
 }
 
-.hero-card {
-    display: flex;
-    flex-direction: column;
+/* 顶部概览卡：月份切换 + 结余 + 收支 + 指标条，合成一张卡。
+   原先是「月份卡 + 结余卡 + 2×2 指标大方块」三块叠在首屏，把下面的支出构成顶出去了。 */
+.overview-card {
+    padding: 20rpx 32rpx 26rpx;
+}
+
+/* 月份切换嵌在卡顶，去掉独立卡片的 padding，按钮缩一号 */
+.overview-card .month-bar {
+    padding: 0 0 4rpx;
+}
+
+.overview-card .month-btn {
+    width: 56rpx;
+    height: 56rpx;
+    line-height: 52rpx;
+    font-size: 34rpx;
+}
+
+.overview-card .month-label {
+    font-size: 26rpx;
 }
 
 .hero-label {
-    font-size: 26rpx;
+    display: block;
+    margin-top: 10rpx;
+    font-size: 24rpx;
     color: var(--text-secondary);
 }
 
 .hero-amount {
-    margin-top: 12rpx;
-    font-size: 68rpx;
+    display: block;
+    margin-top: 2rpx;
+    font-size: 56rpx;
     font-weight: 600;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+/* 收支不再单独加分隔线与大留白，紧贴结余数字 */
 .hero-row {
     display: flex;
-    margin-top: 32rpx;
-    padding-top: 24rpx;
-    border-top: 1rpx solid #f0f1f3;
+    margin-top: 14rpx;
 }
 
 .hero-cell {
     display: flex;
     flex: 1;
+    min-width: 0;
     flex-direction: column;
 }
 
 .hero-cell-label {
-    font-size: 24rpx;
+    font-size: 22rpx;
     color: var(--text-secondary);
 }
 
 .hero-cell-value {
-    margin-top: 8rpx;
-    font-size: 34rpx;
+    margin-top: 4rpx;
+    font-size: 30rpx;
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.metric-grid {
+/* 指标条：4 列内联，替代原来的 2×2 大方块，高度从 ~290rpx 压到 ~90rpx */
+.metric-strip {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+    margin-top: 20rpx;
+    padding-top: 18rpx;
+    border-top: 1rpx solid #f0f1f3;
 }
 
-.metric-card {
-    box-sizing: border-box;
+.metric-cell {
     display: flex;
+    flex: 1;
+    min-width: 0;
     flex-direction: column;
-    width: 48%;
-    margin-bottom: 16rpx;
-    padding: 24rpx;
-    border-radius: 16rpx;
-    background: var(--surface);
 }
 
 .metric-label {
     font-size: 22rpx;
     color: var(--text-secondary);
+    white-space: nowrap;
 }
 
 .metric-value {
-    margin-top: 10rpx;
-    font-size: 30rpx;
+    margin-top: 6rpx;
+    font-size: 26rpx;
     font-weight: 500;
-}
-
-.card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.card-head .section-title {
-    flex: 1;
+    line-height: 1.35;
+    overflow-wrap: break-word;
 }
 
 .more {
@@ -287,61 +294,10 @@
     border-bottom: none;
 }
 
-.record-main {
-    display: flex;
-    flex-direction: column;
-}
-
-.record-category {
-    font-size: 28rpx;
-}
-
-.record-meta {
-    margin-top: 6rpx;
-    font-size: 22rpx;
-    color: var(--text-secondary);
-}
-
-.record-amount {
-    font-size: 30rpx;
-}
-
 /* 文字显示完整性：金额不折行、长名称可省略、指标值允许换行显示完整 */
-.hero-card,
-.hero-cell,
-.metric-card,
 .card-head,
 .cat-item,
-.acct-row,
-.record-main {
-    min-width: 0;
-}
-
-.hero-amount {
-    font-size: 60rpx;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.hero-cell-value {
-    font-size: 32rpx;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.metric-card {
-    min-height: 130rpx;
-    justify-content: center;
-}
-
-.metric-value {
-    line-height: 1.35;
-    overflow-wrap: break-word;
-}
-
-.card-head .section-title {
+.acct-row {
     min-width: 0;
 }
 
@@ -359,28 +315,6 @@
 .acct-row .row-value {
     flex-shrink: 0;
     white-space: nowrap;
-}
-
-.record-main {
-    flex: 1;
-}
-
-.record-category,
-.record-meta {
-    min-width: 0;
-    line-height: 1.5;
-    overflow-wrap: break-word;
-}
-
-.record-amount {
-    flex-shrink: 0;
-    margin-left: 16rpx;
-    white-space: nowrap;
-}
-
-.budget-hint {
-    line-height: 1.6;
-    overflow-wrap: break-word;
 }
 
 .trend-label {

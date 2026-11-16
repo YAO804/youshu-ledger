@@ -1,0 +1,79 @@
+/* 组件默认样式隔离，app.wxss 的 .row / .expense 不会进来，这里自带全套，
+   颜色也用具体色值，不依赖 page 上的 CSS 变量。 */
+.rl-row {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20rpx 0;
+}
+
+/* 相邻行才画分隔线：最后一面不画，页面在列表下方接提示文字时也不会留一条悬空线 */
+.rl-row + .rl-row {
+    border-top: 1rpx solid #f5f6f8;
+}
+
+.rl-row-hover {
+    opacity: 0.55;
+}
+
+.rl-main {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+}
+
+/* 说明文字完整换行，不用省略号；金额不折行 */
+.rl-category {
+    display: block;
+    min-width: 0;
+    font-size: 28rpx;
+    line-height: 1.5;
+    color: #1f2329;
+    overflow-wrap: break-word;
+}
+
+.rl-meta {
+    display: block;
+    min-width: 0;
+    margin-top: 6rpx;
+    font-size: 22rpx;
+    line-height: 1.5;
+    color: #8a8f99;
+    overflow-wrap: break-word;
+}
+
+.rl-amount {
+    flex-shrink: 0;
+    margin-left: 16rpx;
+    font-size: 30rpx;
+    white-space: nowrap;
+}
+
+.rl-expense {
+    color: #d9534f;
+}
+
+.rl-income {
+    color: #2f9e6b;
+}
+
+.rl-empty {
+    display: block;
+    padding: 48rpx 24rpx;
+    text-align: center;
+    font-size: 26rpx;
+    line-height: 1.6;
+    color: #8a8f99;
+    overflow-wrap: break-word;
+}
+
+.rl-hint {
+    display: block;
+    padding: 16rpx 8rpx 0;
+    font-size: 24rpx;
+    line-height: 1.6;
+    color: #8a8f99;
+    overflow-wrap: break-word;
+}

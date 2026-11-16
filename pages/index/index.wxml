@@ -1,19 +1,19 @@
 <view class="page">
     <view wx:if="{{storageNotice}}" class="storage-banner">{{storageNotice}}</view>
 
-    <view class="card month-bar">
-        <view class="month-btn" bindtap="onPrevMonth">‹</view>
-        <text class="month-label">{{monthLabel || month}}</text>
-        <view class="month-btn" bindtap="onNextMonth">›</view>
-    </view>
+    <!-- 月份切换、结余、收支、指标条合到一张卡里：顶部只留一个视觉块，避免首屏被卡片堆满 -->
+    <view class="card overview-card">
+        <view class="month-bar">
+            <view class="month-btn" bindtap="onPrevMonth">‹</view>
+            <text class="month-label">{{monthLabel || month}}</text>
+            <view class="month-btn" bindtap="onNextMonth">›</view>
+        </view>
 
-    <view wx:if="{{viewState === 'loading'}}" class="state">正在加载概览…</view>
-    <view wx:elif="{{viewState === 'error'}}" class="state">{{errorText}}</view>
-
-    <block wx:else>
-        <view class="card hero-card">
+        <!-- 加载中/出错时只留月份切换，避免闪出一屏 ¥ 0.00 的假数字 -->
+        <block wx:if="{{viewState === 'ready'}}">
             <text class="hero-label">本月结余</text>
             <text class="hero-amount {{balanceNegative ? 'expense' : ''}}">¥ {{balanceText}}</text>
+
             <view class="hero-row">
                 <view class="hero-cell">
                     <text class="hero-cell-label">收入</text>
@@ -24,15 +24,20 @@
                     <text class="hero-cell-value expense">¥ {{expenseText}}</text>
                 </view>
             </view>
-        </view>
 
-        <view class="metric-grid">
-            <view class="metric-card" wx:for="{{metrics}}" wx:key="key">
-                <text class="metric-label">{{item.label}}</text>
-                <text class="metric-value {{item.tone}}">{{item.value}}</text>
+            <view class="metric-strip">
+                <view class="metric-cell" wx:for="{{metrics}}" wx:key="key">
+                    <text class="metric-label">{{item.label}}</text>
+                    <text class="metric-value {{item.tone}}">{{item.value}}</text>
+                </view>
             </view>
-        </view>
+        </block>
+    </view>
 
+    <view wx:if="{{viewState === 'loading'}}" class="state">正在加载概览…</view>
+    <view wx:elif="{{viewState === 'error'}}" class="state">{{errorText}}</view>
+
+    <block wx:else>
         <view wx:if="{{budgetHint}}" class="budget-hint {{budgetOver ? 'over' : ''}}">{{budgetHint}}</view>
 
         <view class="card">
@@ -99,15 +104,12 @@
                 <text class="section-title">最近账目</text>
                 <text wx:if="{{toggleText}}" class="more" bindtap="onToggleRecords">{{toggleText}}</text>
             </view>
-            <view wx:if="{{!hasData}}" class="state">本月还没有账目，点「记一笔」开始记录</view>
-            <view wx:if="{{hasData}}" class="row record-row" wx:for="{{displayRecords}}" wx:key="id" data-id="{{item.id}}" bindlongpress="onDeleteRecord">
-                <view class="record-main">
-                    <text class="record-category">{{item.categoryName}}</text>
-                    <text class="record-meta">{{item.dateText}} · {{item.accountName}} {{item.noteText}}</text>
-                </view>
-                <text class="record-amount {{item.type === 'income' ? 'income' : 'expense'}}">{{item.amountText}}</text>
-            </view>
-            <text wx:if="{{hasData}}" class="hint-text">长按账目可删除</text>
+            <record-list
+                records="{{displayRecords}}"
+                empty="本月还没有账目，点「记一笔」开始记录"
+                hint="长按账目可删除"
+                bind:delete="onDeleteRecord"
+            />
         </view>
     </block>
 </view>
