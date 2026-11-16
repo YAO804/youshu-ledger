@@ -2,6 +2,9 @@ const {
     pad, toCents, fromCents, signedAmount, today, currentMonth,
     shiftMonth, monthEnd, normalizeDate,
 } = require('./format');
+const {
+    DEFAULT_KEY, avatarEmoji, ensureDefaults, normalizeAvatar,
+} = require('./profile');
 
 const STORAGE_KEY = 'youshu_ledger_v1';
 
@@ -35,7 +38,7 @@ function defaultCategories() {
 function defaultState() {
     return {
         version: 1,
-        profile: { nickname: '' },
+        profile: { nickname: '', avatar: '' },
         accounts: defaultAccounts(),
         categories: defaultCategories(),
         records: [],
@@ -230,7 +233,14 @@ function mapHeader(row) {
 async function init() {
     const state = load();
     const generated = applyRecurring(state);
-    if (generated > 0 && !save(state)) {
+    // 第一次打开就自动配好昵称和头像，老数据缺头像的也在这里补齐。
+    const missingProfile = ensureDefaults(state.profile);
+    let dirty = generated > 0;
+    if (missingProfile) {
+        state.profile = Object.assign({}, state.profile, missingProfile);
+        dirty = true;
+    }
+    if (dirty && !save(state)) {
         return fail('STORAGE_FULL', '本地存储写入失败');
     }
     return ok({ generated });
@@ -275,8 +285,10 @@ async function getStats(month) {
     const expenseTotal = expenseRows.reduce((sum, r) => sum + r.amount, 0);
 
     const byCategory = {};
+    const countByCategory = {};
     expenseRows.forEach((r) => {
         byCategory[r.categoryId] = (byCategory[r.categoryId] || 0) + r.amount;
+        countByCategory[r.categoryId] = (countByCategory[r.categoryId] || 0) + 1;
     });
     const categoryRows = Object.keys(byCategory).map((id, index) => {
         const category = state.categories.find((c) => c.id === id);
@@ -289,6 +301,7 @@ async function getStats(month) {
             percentText: percent + '%',
             percent,
             amount,
+            count: countByCategory[id] || 0,
         };
     }).sort((a, b) => b.amount - a.amount);
 
@@ -626,10 +639,14 @@ async function removeRecurring(id) {
 
 async function getProfile() {
     const state = load();
+    // 兜底：即使 profile 还没落库，也先渲染一套自动生成的昵称和头像。
+    const view = Object.assign({}, state.profile, ensureDefaults(state.profile) || {});
+    const nickname = String(view.nickname || '').trim();
     return ok({
-        nickname: state.profile.nickname || '',
-        nicknameText: state.profile.nickname || '未设置昵称',
-        avatarText: state.profile.nickname ? state.profile.nickname.slice(0, 1) : '?',
+        nickname,
+        avatar: normalizeAvatar(view.avatar),
+        avatarEmoji: avatarEmoji(view.avatar),
+        nicknameText: nickname || '未设置昵称',
         recordCount: state.records.length,
     });
 }
@@ -637,6 +654,9 @@ async function getProfile() {
 async function setProfile(patch) {
     const state = load();
     state.profile.nickname = String(patch.nickname || '').trim().slice(0, 12);
+    const avatar = normalizeAvatar(patch.avatar);
+    if (avatar) state.profile.avatar = avatar;
+    else if (!state.profile.avatar) state.profile.avatar = DEFAULT_KEY;
     if (!save(state)) return fail('STORAGE_FULL', '本地存储写入失败');
     return ok(state.profile);
 }
@@ -733,7 +753,10 @@ async function importCsv(text) {
 }
 
 async function resetAll() {
+    // 昵称和头像是身份，不是账目，清空数据时保留。
+    const keep = load().profile || {};
     const state = defaultState();
+    state.profile = { nickname: keep.nickname || '', avatar: keep.avatar || '' };
     if (!save(state)) return fail('STORAGE_FULL', '本地存储写入失败');
     return ok({ reset: true });
 }

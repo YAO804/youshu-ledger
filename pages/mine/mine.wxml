@@ -1,11 +1,41 @@
 <view class="page">
     <view class="card profile">
-        <view class="avatar">{{avatarText}}</view>
-        <view class="profile-info">
-            <input class="nickname-input" placeholder="设置昵称" value="{{nicknameInput}}" bindinput="onNicknameInput" />
-            <text class="profile-desc">共 {{recordCount}} 笔账目 · {{storageText}}</text>
+        <view class="avatar" bindtap="onAvatarTap">
+            <text class="avatar-emoji">{{avatarEmoji}}</text>
         </view>
-        <view class="save-nick" bindtap="onSaveNickname">保存</view>
+        <view class="profile-info">
+            <block wx:if="{{editing}}">
+                <input class="nickname-input" value="{{nicknameInput}}" focus="{{editing}}" maxlength="12"
+                    placeholder="给这本账起个名字" confirm-type="done"
+                    bindinput="onNicknameInput" bindconfirm="onSaveNickname" />
+                <text class="profile-desc">点头像可以换一个 · 共 {{recordCount}} 笔账目 · {{storageText}}</text>
+            </block>
+            <block wx:else>
+                <view class="nickname-row">
+                    <text class="nickname-text">{{nicknameText}}</text>
+                    <view class="edit-chip" bindtap="onEditStart">
+                        <text class="edit-chip-icon">✎</text>
+                        <text class="edit-chip-text">编辑</text>
+                    </view>
+                </view>
+                <text class="profile-desc">共 {{recordCount}} 笔账目 · {{storageText}}</text>
+            </block>
+        </view>
+    </view>
+
+    <view class="avatar-picker" wx:if="{{editing}}">
+        <text class="picker-title">换个头像</text>
+        <view class="avatar-grid">
+            <view class="avatar-option {{item.key === draftAvatar ? 'active' : ''}}"
+                wx:for="{{avatarOptions}}" wx:key="key" data-key="{{item.key}}" bindtap="onPickAvatar">
+                <text class="avatar-option-emoji">{{item.emoji}}</text>
+            </view>
+        </view>
+    </view>
+
+    <view class="edit-bar" wx:if="{{editing}}">
+        <view class="edit-btn ghost" bindtap="onCancelEdit">取消</view>
+        <view class="edit-btn primary" bindtap="onSaveNickname">保存</view>
     </view>
 
     <view class="notice">{{notice}}</view>

@@ -1,9 +1,19 @@
 const store = require('../../utils/ledger-store');
+const {
+    avatarEmoji, avatarOptions, nextAvatar,
+} = require('../../utils/profile');
 
 Page({
     data: {
-        avatarText: '?',
+        // 昵称和头像都是自动生成好的，展示态只读；点「编辑」才进输入态。
+        nickname: '',
+        nicknameText: '未设置昵称',
+        avatar: '',
+        avatarEmoji: avatarEmoji(''),
+        draftAvatar: '',
         nicknameInput: '',
+        avatarOptions: avatarOptions(),
+        editing: false,
         recordCount: 0,
         storageMode: store.mode,
         cloudAvailable: store.cloudAvailable,
@@ -132,10 +142,37 @@ Page({
             wx.showToast({ title: error.message, icon: 'none' });
             return;
         }
-        this.setData({
-            avatarText: data.avatarText,
-            nicknameInput: data.nickname,
+        const patch = {
+            nickname: data.nickname,
+            nicknameText: data.nicknameText,
+            avatar: data.avatar,
             recordCount: data.recordCount,
+        };
+        // 正在编辑时不要把用户没保存的输入（含头像预览）冲掉。
+        if (!this.data.editing) {
+            patch.nicknameInput = data.nickname;
+            patch.draftAvatar = data.avatar;
+            patch.avatarEmoji = data.avatarEmoji;
+        }
+        this.setData(patch);
+    },
+
+    onEditStart() {
+        if (this.data.editing) return;
+        this.setData({
+            editing: true,
+            nicknameInput: this.data.nickname,
+            draftAvatar: this.data.avatar,
+            avatarEmoji: avatarEmoji(this.data.avatar),
+        });
+    },
+
+    onCancelEdit() {
+        this.setData({
+            editing: false,
+            nicknameInput: this.data.nickname,
+            draftAvatar: this.data.avatar,
+            avatarEmoji: avatarEmoji(this.data.avatar),
         });
     },
 
@@ -143,14 +180,41 @@ Page({
         this.setData({ nicknameInput: event.detail.value });
     },
 
+    // 编辑态点头像就是「换下一个」，展示态点头像进编辑。
+    onAvatarTap() {
+        if (!this.data.editing) {
+            this.onEditStart();
+            return;
+        }
+        this.applyDraftAvatar(nextAvatar(this.data.draftAvatar));
+    },
+
+    onPickAvatar(event) {
+        const key = event.currentTarget.dataset.key;
+        if (!key) return;
+        this.applyDraftAvatar(key);
+    },
+
+    applyDraftAvatar(key) {
+        this.setData({ draftAvatar: key, avatarEmoji: avatarEmoji(key) });
+    },
+
     async onSaveNickname() {
-        const { error } = await store.setProfile({ nickname: this.data.nicknameInput });
+        const nickname = String(this.data.nicknameInput || '').trim();
+        if (!nickname) {
+            wx.showToast({ title: '昵称不能为空', icon: 'none' });
+            return;
+        }
+        wx.showLoading({ title: '保存中…', mask: true });
+        const { error } = await store.setProfile({ nickname, avatar: this.data.draftAvatar });
+        wx.hideLoading();
         if (error) {
             wx.showToast({ title: error.message, icon: 'none' });
             return;
         }
-        wx.showToast({ title: '已保存', icon: 'success' });
+        this.setData({ editing: false });
         await this.refresh();
+        wx.showToast({ title: '已保存', icon: 'success' });
     },
 
     onMenuTap(event) {

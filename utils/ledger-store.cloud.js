@@ -4,6 +4,9 @@ const {
     pad, toCents, fromCents, signedAmount, today, currentMonth,
     shiftMonth, monthEnd, normalizeDate,
 } = require('./format');
+const {
+    DEFAULT_KEY, avatarEmoji, createDefaultProfile, ensureDefaults, normalizeAvatar,
+} = require('./profile');
 
 const EXPENSE_NAMES = ['餐饮', '交通', '购物', '居住', '日用', '娱乐', '医疗', '教育', '人情', '其他'];
 const INCOME_NAMES = ['工资', '奖金', '理财', '兼职', '其他'];
@@ -104,9 +107,9 @@ const ruleAccess = makeAccess(
 
 const profileAccess = makeAccess(
     'ledger_profiles',
-    ['id', 'nickname'],
-    (r) => ({ id: r.id, nickname: r.nickname || '' }),
-    { nickname: 'nickname' },
+    ['id', 'nickname', 'avatar'],
+    (r) => ({ id: r.id, nickname: r.nickname || '', avatar: r.avatar || '' }),
+    { nickname: 'nickname', avatar: 'avatar' },
 );
 
 function defaultAccounts() {
@@ -307,10 +310,17 @@ async function init() {
             state.categories.push(res.data);
         }
     }
+    // 昵称和头像都自动配好再落库，用户第一次打开就有「爱攒钱的小猫」可用；
+    // 老数据里缺头像的也在这里补齐（同一昵称映射到同一头像，两台手机看到的一样）。
+    const missingProfile = ensureDefaults(state.profiles[0] || null);
     if (state.profiles.length === 0) {
-        const res = await profileAccess.create({ nickname: '' });
+        const res = await profileAccess.create(missingProfile || createDefaultProfile());
         if (res.error) return fail('SEED_FAILED', '初始化资料失败：' + res.error.message);
         state.profiles.push(res.data);
+    } else if (missingProfile) {
+        const res = await profileAccess.update(state.profiles[0].id, missingProfile);
+        if (res.error) return fail('SEED_FAILED', '初始化资料失败：' + res.error.message);
+        state.profiles[0] = res.data;
     }
 
     const todayText = today();
@@ -385,8 +395,10 @@ async function getStats(month) {
     const expenseTotal = expenseRows.reduce((sum, r) => sum + r.amount, 0);
 
     const byCategory = {};
+    const countByCategory = {};
     expenseRows.forEach((r) => {
         byCategory[r.categoryId] = (byCategory[r.categoryId] || 0) + r.amount;
+        countByCategory[r.categoryId] = (countByCategory[r.categoryId] || 0) + 1;
     });
     const categoryRows = Object.keys(byCategory).map((id, index) => {
         const category = state.categories.find((c) => String(c.id) === id);
@@ -399,6 +411,7 @@ async function getStats(month) {
             percentText: percent + '%',
             percent,
             amount,
+            count: countByCategory[id] || 0,
         };
     }).sort((a, b) => b.amount - a.amount);
 
@@ -674,11 +687,14 @@ async function getProfile() {
     const loaded = await loadState();
     if (loaded.error) return loaded;
     const state = loaded.data;
-    const nickname = state.profiles.length ? state.profiles[0].nickname : '';
+    const row = state.profiles.length ? state.profiles[0] : {};
+    const nickname = row.nickname || '';
+    const avatar = normalizeAvatar(row.avatar);
     return ok({
         nickname,
+        avatar,
+        avatarEmoji: avatarEmoji(avatar),
         nicknameText: nickname || '未设置昵称',
-        avatarText: nickname ? nickname.slice(0, 1) : '?',
         recordCount: state.records.length,
     });
 }
@@ -687,10 +703,13 @@ async function setProfile(patch) {
     const loaded = await loadState();
     if (loaded.error) return loaded;
     const nickname = String(patch.nickname || '').trim().slice(0, 12);
+    const row = { nickname };
+    const avatar = normalizeAvatar(patch.avatar);
+    if (avatar) row.avatar = avatar;
     if (loaded.data.profiles.length) {
-        return writeResult(await profileAccess.update(loaded.data.profiles[0].id, { nickname }));
+        return writeResult(await profileAccess.update(loaded.data.profiles[0].id, row));
     }
-    return writeResult(await profileAccess.create({ nickname }));
+    return writeResult(await profileAccess.create(Object.assign({ avatar: DEFAULT_KEY }, row)));
 }
 
 async function exportCsv() {
@@ -782,7 +801,9 @@ async function importCsv(text) {
 }
 
 async function resetAll() {
+    // 昵称和头像是身份，不是账目，清空数据时保留 ledger_profiles。
     for (const table of TABLES) {
+        if (table === 'ledger_profiles') continue;
         const { error } = await cloud.database.from(table).delete().gte('id', 0).select('id');
         if (error) return fail(error.code || 'RESET_FAILED', error.message || '清空失败');
     }

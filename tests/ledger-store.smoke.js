@@ -108,6 +108,12 @@ function dataOf(result) {
     const day = Number(today().slice(8, 10));
 
     dataOf(await store.init());
+
+    // 首次打开就该自动配好昵称和头像，不需要用户手输。
+    const seededProfile = dataOf(await store.getProfile());
+    check('首次打开自动生成昵称', seededProfile.nickname.length > 0, seededProfile);
+    check('首次打开自动生成头像', !!seededProfile.avatar && !!seededProfile.avatarEmoji, seededProfile);
+
     const accounts = dataOf(await store.getAccounts());
     check('首次登录种子 4 个账户', accounts.length === 4, accounts.length);
     const categories = dataOf(await store.getCategories('expense'));
@@ -171,11 +177,14 @@ function dataOf(result) {
     check('金额为 0 被拒绝', !!bad.error && bad.error.code === 'INVALID_AMOUNT', bad.error);
     check('最终账目数 5', dataOf(await store.getMonthOverview(month)).recordCount === 5);
 
-    dataOf(await store.setProfile({ nickname: '测试用户' }));
-    check('昵称写入云端', dataOf(await store.getProfile()).nickname === '测试用户');
+    dataOf(await store.setProfile({ nickname: '测试用户', avatar: 'fox' }));
+    const savedProfile = dataOf(await store.getProfile());
+    check('昵称写入云端', savedProfile.nickname === '测试用户', savedProfile);
+    check('头像写入云端', savedProfile.avatar === 'fox' && savedProfile.avatarEmoji === '🦊', savedProfile);
 
     dataOf(await store.resetAll());
     check('清空后归零', dataOf(await store.getMonthOverview(month)).recordCount === 0);
+    check('清空账目不重置昵称头像', dataOf(await store.getProfile()).nickname === '测试用户');
 
     // 共享账本：全流程不应出现任何登录态检查
     check('共享账本模式', store.storageMode === 'shared', store.storageMode);

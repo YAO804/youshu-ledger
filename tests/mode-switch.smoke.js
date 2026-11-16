@@ -41,7 +41,7 @@ function sharedImpl(options) {
         getProfile: async () => {
             stats.calls += 1;
             if (config.profileError) return { data: null, error: config.profileError };
-            return ok({ nickname: '云端', avatarText: '云', recordCount: 0 });
+            return ok({ nickname: '云端', avatar: 'cat', avatarEmoji: '🐱', recordCount: 0 });
         },
     };
 }
