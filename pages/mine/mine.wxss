@@ -134,30 +134,6 @@
     line-height: 44rpx;
 }
 
-/* 最后一个格子：上传自己的照片，没选过就是虚线加号 */
-.avatar-upload {
-    border-style: dashed;
-    border-color: #d5d8de;
-    background: #fafbfc;
-}
-
-.avatar-upload.active {
-    border-style: solid;
-    border-color: var(--brand);
-}
-
-.avatar-option-img {
-    width: 70rpx;
-    height: 70rpx;
-    border-radius: 35rpx;
-}
-
-.avatar-upload-plus {
-    font-size: 40rpx;
-    line-height: 44rpx;
-    color: var(--text-secondary);
-}
-
 .picker-hint {
     display: block;
     overflow-wrap: break-word;

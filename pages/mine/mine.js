@@ -2,7 +2,6 @@ const store = require('../../utils/ledger-store');
 const {
     AVATAR_CUSTOM, avatarDisplay, avatarEmoji, avatarOptions, nextAvatar,
 } = require('../../utils/profile');
-const { pickAvatarImage } = require('../../utils/avatar-image');
 
 Page({
     data: {
@@ -215,28 +214,6 @@ Page({
             draftImage: '',
             avatarEmoji: avatarEmoji(key),
             avatarImage: '',
-        });
-    },
-
-    // 从相册或相机选一张，裁成 240x240 后以 data URI 预览，保存时才落库。
-    async onChooseAvatar() {
-        if (this.choosingAvatar) return;
-        this.choosingAvatar = true;
-        wx.showLoading({ title: '处理中…', mask: true });
-        const { data, error } = await pickAvatarImage();
-        wx.hideLoading();
-        this.choosingAvatar = false;
-        if (error) {
-            if (error.code !== 'CANCELLED') {
-                wx.showToast({ title: error.message || '选图失败', icon: 'none' });
-            }
-            return;
-        }
-        this.setData({
-            draftAvatar: AVATAR_CUSTOM,
-            draftImage: data,
-            avatarEmoji: '',
-            avatarImage: data,
         });
     },
 
