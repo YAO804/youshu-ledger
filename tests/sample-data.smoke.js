@@ -71,6 +71,10 @@ async function main() {
     check('空月份在趋势窗口内且只留最短桩',
         !!blankRow && blankRow.incomeHeight === 4 && blankRow.expenseHeight === 4,
         blankRow);
+    // 概览页那 6 根柱子必须以选中月为右界，翻到历史月份时选中月不能被切掉
+    check('概览趋势末位跟随选中月',
+        blankStats.data.overviewTrendRows[5].id === blankMonth,
+        blankStats.data.overviewTrendRows.map((r) => r.id));
 
     // 负结余月
     const negative = await local.getMonthOverview(shiftMonth(thisMonth, -3));

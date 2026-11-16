@@ -89,4 +89,31 @@ const negative = buildDashboard({
 check('负结余标记为负', negative.balanceNegative === true);
 check('负结余率标红', negative.metrics[0].value === '-200%' && negative.metrics[0].tone === 'expense', negative.metrics[0]);
 
+// 5. 概览趋势六根柱子：数据层给了「以选中月为右界」的 6 个月就直接用，不再二次归一化
+const ovRows = [
+    { id: '2025-06', label: '06月', income: 0, expense: 100, incomeHeight: 10, expenseHeight: 10 },
+    { id: '2025-07', label: '07月', income: 0, expense: 100, incomeHeight: 10, expenseHeight: 10 },
+    { id: '2025-08', label: '08月', income: 0, expense: 100, incomeHeight: 10, expenseHeight: 10 },
+    { id: '2025-09', label: '09月', income: 0, expense: 100, incomeHeight: 10, expenseHeight: 10 },
+    { id: '2025-10', label: '10月', income: 0, expense: 100, incomeHeight: 10, expenseHeight: 10 },
+    { id: '2025-11', label: '11月', income: 900, expense: 300, incomeHeight: 100, expenseHeight: 33 },
+];
+const withOverviewTrend = buildDashboard(overview, {
+    categoryRows: [], trendRows: [], overviewTrendRows: ovRows, budgetRows: [],
+}, accounts, '2025-11');
+check('概览趋势用数据层给的 6 个月', withOverviewTrend.trendRows.length === 6, withOverviewTrend.trendRows.length);
+check('概览趋势末位是选中月', withOverviewTrend.trendRows[5].id === '2025-11', withOverviewTrend.trendRows.map((r) => r.id));
+check('概览趋势柱高原样透传', withOverviewTrend.trendRows[5].incomeHeight === 100
+    && withOverviewTrend.trendRows[5].expenseHeight === 33, withOverviewTrend.trendRows[5]);
+
+// 只给 12 个月窗口的老路径：取尾 6 个并按 6 个月重新归一化
+const longRows = Array.from({ length: 12 }, (_, i) => ({
+    id: 'm' + i, label: i + '月',
+    income: i === 0 ? 100000 : 1000, expense: 500, incomeHeight: 4, expenseHeight: 4,
+}));
+const legacy = buildDashboard(overview, { categoryRows: [], trendRows: longRows, budgetRows: [] }, accounts, month);
+check('只有 12 个月窗口时取尾 6 个', legacy.trendRows.length === 6 && legacy.trendRows[5].id === 'm11',
+    legacy.trendRows.map((r) => r.id));
+check('尾段按自身峰值重新归一化', legacy.trendRows[5].incomeHeight === 100, legacy.trendRows[5].incomeHeight);
+
 console.log('\nTOTAL PASS ' + passed);

@@ -22,8 +22,12 @@ function buildDashboard(overview, stats, accounts, month) {
     const expense = Number(overview.expense) || 0;
     const balance = Number(overview.balance) || 0;
     const categoryRows = (stats && stats.categoryRows) || [];
-    // 统计页的趋势窗口是一年，概览只画 6 根柱子，切完要按 6 个月重新归一化柱高。
-    const trendRows = tailTrendRows((stats && stats.trendRows) || [], 6);
+    // 概览只画 6 根柱子。优先用数据层算好的「以选中月为右界」那 6 个月；
+    // 只有 12 个月窗口的旧调用方（测试与兼容路径）才退回取尾段重新归一化。
+    const overviewTrend = stats && stats.overviewTrendRows;
+    const trendRows = (overviewTrend && overviewTrend.length)
+        ? overviewTrend
+        : tailTrendRows((stats && stats.trendRows) || [], 6);
     const budgetRows = (stats && stats.budgetRows) || [];
     const records = (overview && overview.records) || [];
     const accountRows = (accounts || []).map((a) => ({

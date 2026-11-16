@@ -95,6 +95,13 @@ Page({
         wx.switchTab({ url: '/pages/stats/stats' });
     },
 
+    // 点趋势图里的柱子直接跳到那个月，下面的分类构成、账户余额都跟着变。
+    onTrendTap(event) {
+        const next = event.currentTarget.dataset.month;
+        if (!next || next === this.data.month) return;
+        this.setData({ month: next, monthLabel: next }, () => this.refresh());
+    },
+
     // 点分类行进明细，带上月份、分类 id 和名称，详情页自己按需排序。
     onCategoryTap(event) {
         const id = event.currentTarget.dataset.id;

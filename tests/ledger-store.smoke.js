@@ -156,6 +156,9 @@ function dataOf(result) {
     check('趋势柱子带年份标签', !!stats.trendRows[0].yearLabel, stats.trendRows[0]);
     check('趋势柱高在 1~100 之间', stats.trendRows.every((r) => r.incomeHeight >= 4 && r.incomeHeight <= 100),
         stats.trendRows.map((r) => r.incomeHeight));
+    check('概览趋势 6 个月且以选中月为右界',
+        stats.overviewTrendRows.length === 6 && stats.overviewTrendRows[5].id === month,
+        stats.overviewTrendRows.map((r) => r.id));
     check('分类占比 100%', stats.categoryRows[0].percentText === '100%', stats.categoryRows[0]);
 
     dataOf(await store.setBudget({ month, categoryId: '', amountCents: 10000 }));

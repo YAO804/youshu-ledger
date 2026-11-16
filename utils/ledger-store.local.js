@@ -319,7 +319,12 @@ async function getStats(month) {
         };
     }).sort((a, b) => b.amount - a.amount);
 
-    const trendRows = buildTrendRows(trendMonths(month), (m) => summarize(recordsOfMonth(state, m)));
+    const trendSummary = (m) => summarize(recordsOfMonth(state, m));
+    // 统计页的窗口以「今天」为右界，翻历史月份时整年不漂移。
+    const trendRows = buildTrendRows(trendMonths(month), trendSummary);
+    // 概览页只画 6 根柱子，且必须以选中月为右界 —— 否则翻到今年早些时候，
+    // 选中月会落在 12 个月窗口的前半段，被「取尾 6 个」切掉，图上根本没有那根柱子。
+    const overviewTrendRows = buildTrendRows(trendMonths(month, { size: 6, today: month }), trendSummary);
 
     const budgetRows = state.budgets.filter((b) => b.month === month).map((b) => {
         const used = b.categoryId
@@ -339,7 +344,7 @@ async function getStats(month) {
         };
     });
 
-    return ok({ categoryRows, trendRows, budgetRows });
+    return ok({ categoryRows, trendRows, overviewTrendRows, budgetRows });
 }
 
 function sum(rows) {

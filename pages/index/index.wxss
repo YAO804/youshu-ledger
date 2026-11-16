@@ -237,12 +237,20 @@
     margin-right: 24rpx;
 }
 
+/* 提示靠右，告诉用户柱子可点 */
+.trend-tip {
+    flex-shrink: 0;
+    font-size: 22rpx;
+    color: var(--text-secondary);
+}
+
 .trend-chart {
     display: flex;
-    align-items: flex-end;
+    /* 拉满高度，选中列的浅色底才能铺满一整列 */
+    align-items: stretch;
     justify-content: space-between;
     height: 200rpx;
-    padding: 16rpx 8rpx 0;
+    padding: 10rpx 8rpx 0;
     border-radius: 12rpx;
     background: #f7f8fa;
 }
@@ -250,9 +258,26 @@
 .trend-col {
     display: flex;
     flex: 1;
+    min-width: 0;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
+    padding-bottom: 6rpx;
+    border-radius: 10rpx;
+}
+
+/* 选中月整列铺一层浅色底，比只改文字颜色更容易认出来 */
+.trend-col.active {
+    background: rgba(47, 111, 237, 0.1);
+}
+
+.trend-col-hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.trend-col.active .trend-label {
+    color: var(--brand);
+    font-weight: 600;
 }
 
 .trend-bars {

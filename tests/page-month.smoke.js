@@ -59,7 +59,7 @@ function createInstance(config, month) {
 const THIS_MONTH = currentMonth();
 const PAST = shiftMonth(THIS_MONTH, -3);
 
-// 两个页面共用同一套月份规则，所以断言表也共用，只有滚动目标这类页面专属字段除外。
+// 两个页面共用同一套月份规则，断言表也共用；只有滚动目标这类页面专属字段要单独区分。
 const PAGES = [
     { name: '统计页', file: 'pages/stats/stats.js', hasScrollTarget: true },
     { name: '概览页', file: 'pages/index/index.js', hasScrollTarget: false },
@@ -141,23 +141,39 @@ async function runPage(page) {
             switcher.data.scrollTarget === 'trend-' + shiftMonth(THIS_MONTH, -1), switcher.data.scrollTarget);
     }
 
-    // 统计页独有：点趋势柱子切月
+    // 两个页面的趋势图都支持点柱子切月
+    check(page.name + '：提供点柱子切月入口', typeof config.onTrendTap === 'function');
+
+    const tapSwitch = createInstance(config, THIS_MONTH);
+    tapSwitch.onTrendTap({ currentTarget: { dataset: { month: PAST } } });
+    check(page.name + '：点柱子切到该月', tapSwitch.data.month === PAST, tapSwitch.data.month);
+    check(page.name + '：点柱子会刷新一次', tapSwitch.refreshCount === 1, tapSwitch.refreshCount);
+
+    tapSwitch.onTrendTap({ currentTarget: { dataset: { month: PAST } } });
+    check(page.name + '：重复点同一根柱子不再刷新', tapSwitch.refreshCount === 1, tapSwitch.refreshCount);
+
+    // 点当前月那根柱子不应该产生任何刷新
+    const tapSelf = createInstance(config, THIS_MONTH);
+    tapSelf.onTrendTap({ currentTarget: { dataset: { month: THIS_MONTH } } });
+    check(page.name + '：点当前月柱子不刷新', tapSelf.refreshCount === 0, tapSelf.refreshCount);
+
+    // 缺 dataset 的脏事件不能把月份改成 undefined
+    const badTap = createInstance(config, THIS_MONTH);
+    badTap.onTrendTap({ currentTarget: { dataset: {} } });
+    check(page.name + '：脏事件不改月份', badTap.data.month === THIS_MONTH, badTap.data.month);
+
     if (page.hasScrollTarget) {
-        const tapSwitch = createInstance(config, THIS_MONTH);
-        tapSwitch.onTrendTap({ currentTarget: { dataset: { month: PAST } } });
-        check(page.name + '：点柱子切到该月', tapSwitch.data.month === PAST, tapSwitch.data.month);
         check(page.name + '：点柱子后滚到该柱子',
             tapSwitch.data.scrollTarget === 'trend-' + PAST, tapSwitch.data.scrollTarget);
-        check(page.name + '：点柱子会刷新一次', tapSwitch.refreshCount === 1, tapSwitch.refreshCount);
-
-        tapSwitch.onTrendTap({ currentTarget: { dataset: { month: PAST } } });
-        check(page.name + '：重复点同一根柱子不再刷新', tapSwitch.refreshCount === 1, tapSwitch.refreshCount);
 
         // 用户手动拖走之后，同月份的刷新不该把图拽回来（这里只刷新，不经过 onShow）
         tapSwitch.setData({ scrollTarget: '' });
         await tapSwitch.refresh();
         check(page.name + '：同月份刷新不打扰拖动',
             tapSwitch.data.scrollTarget === '', tapSwitch.data.scrollTarget);
+    } else {
+        // 概览页的 6 根柱子不滚动，靠整列高亮表示选中，所以只校验选中态依赖的 month 字段
+        check(page.name + '：无需滚动目标字段', page.hasScrollTarget === false);
     }
 }
 

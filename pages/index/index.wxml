@@ -62,16 +62,26 @@
         </view>
 
         <view class="card">
-            <text class="section-title">近 6 个月收支</text>
+            <view class="card-head">
+                <text class="section-title">近 6 个月收支</text>
+                <text class="trend-tip">点柱子切到该月 ›</text>
+            </view>
             <view class="legend">
                 <text class="legend-item income">■ 收入</text>
                 <text class="legend-item expense">■ 支出</text>
             </view>
             <view class="trend-chart">
-                <view class="trend-col" wx:for="{{trendRows}}" wx:key="id">
+                <view
+                    class="trend-col {{item.id === month ? 'active' : ''}}"
+                    wx:for="{{trendRows}}"
+                    wx:key="id"
+                    data-month="{{item.id}}"
+                    bindtap="onTrendTap"
+                    hover-class="trend-col-hover"
+                >
                     <view class="trend-bars">
-                        <view class="bar income-bar" style="height: {{item.incomeHeight}}rpx"></view>
-                        <view class="bar expense-bar" style="height: {{item.expenseHeight}}rpx"></view>
+                        <view class="bar income-bar" style="height: {{item.incomeHeight}}%"></view>
+                        <view class="bar expense-bar" style="height: {{item.expenseHeight}}%"></view>
                     </view>
                     <text class="trend-label">{{item.label}}</text>
                 </view>
