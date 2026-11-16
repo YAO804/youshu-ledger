@@ -25,10 +25,11 @@
     <view class="card">
         <text class="section-title">支出分类占比</text>
         <view wx:if="{{categoryRows.length === 0}}" class="state">本月暂无支出数据</view>
-        <view wx:if="{{categoryRows.length > 0}}" class="cat-row" wx:for="{{categoryRows}}" wx:key="id">
+        <view wx:if="{{categoryRows.length > 0}}" class="cat-row" wx:for="{{categoryRows}}" wx:key="id" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onCategoryTap" hover-class="cat-row-hover">
             <view class="cat-head">
                 <text class="row-label">{{item.name}}</text>
                 <text class="row-value">{{item.amountText}} · {{item.percentText}}</text>
+                <text class="cat-chevron">›</text>
             </view>
             <view class="cat-track">
                 <view class="cat-fill" style="width: {{item.percent}}%"></view>

@@ -4,6 +4,7 @@
     "pages/add/add",
     "pages/stats/stats",
     "pages/mine/mine",
+    "pages/category-detail/category-detail",
     "pages/accounts/accounts",
     "pages/categories/categories",
     "pages/budgets/budgets",

@@ -48,4 +48,18 @@ Page({
     onNextMonth() {
         this.setData({ month: shiftMonth(this.data.month, 1) }, () => this.refresh());
     },
+
+    // 点分类行看这个分类当月的全部明细。
+    onCategoryTap(event) {
+        const id = event.currentTarget.dataset.id;
+        const name = event.currentTarget.dataset.name || '分类';
+        if (!id) return;
+        wx.navigateTo({
+            url: '/pages/category-detail/category-detail?month=' + this.data.month
+                + '&categoryId=' + encodeURIComponent(id)
+                + '&name=' + encodeURIComponent(name)
+                + '&type=expense',
+            fail: () => wx.showToast({ title: '页面暂未开放', icon: 'none' }),
+        });
+    },
 });

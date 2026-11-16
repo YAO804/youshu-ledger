@@ -115,6 +115,17 @@ async function main() {
     const after = await local.getMonthOverview(thisMonth);
     check('重复生成不叠加数据', again.error === null && after.data.recordCount === 17, after.data.recordCount);
 
+    // 分类明细页依赖的原始字段必须齐全，否则筛选和排序都会失效
+    const sampleRows = after.data.records;
+    check('记录带分类 id', sampleRows.every((r) => typeof r.categoryId === 'string' && r.categoryId !== ''));
+    check('记录带原始日期', sampleRows.every((r) => /^\d{4}-\d{2}-\d{2}$/.test(String(r.occurredAt))));
+    check('记录带整数分金额', sampleRows.every((r) => Number.isInteger(r.amount) && r.amount > 0));
+
+    const dining = categories.data.find((c) => c.name === '餐饮');
+    const diningRows = sampleRows.filter((r) => r.categoryId === dining.id);
+    check('餐饮分类本月 3 笔', diningRows.length === 3, diningRows.length);
+    check('餐饮分类合计 175.50', diningRows.reduce((sum, r) => sum + r.amount, 0) === 17550, diningRows.map((r) => r.amount));
+
     console.log('\nTOTAL PASS ' + passed);
 }
 

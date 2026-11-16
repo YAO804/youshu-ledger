@@ -45,19 +45,20 @@
                 <view class="stack">
                     <view wx:for="{{categoryStack}}" wx:key="id" class="stack-seg" style="width: {{item.percent}}%; background: {{item.color}}"></view>
                 </view>
-                <view class="cat-row" wx:for="{{categoryRows}}" wx:key="id">
+                <view class="cat-row" wx:for="{{categoryRows}}" wx:key="id" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onCategoryTap" hover-class="cat-row-hover">
                     <view class="cat-head">
                         <view class="cat-name">
                             <view class="dot" style="background: {{item.color}}"></view>
                             <text>{{item.name}}</text>
                         </view>
                         <text class="row-value">¥ {{item.amountText}} · {{item.percentText}}</text>
+                        <text class="cat-chevron">›</text>
                     </view>
                     <view class="cat-track">
                         <view class="cat-fill" style="width: {{item.barWidth}}%; background: {{item.color}}"></view>
                     </view>
                 </view>
-                <view wx:if="{{categoryTotal > 5}}" class="cat-more">另有 {{categoryTotal - 5}} 个分类，可在「统计」查看</view>
+                <view wx:if="{{categoryTotal > 5}}" class="cat-more" bindtap="onGoStats">另有 {{categoryTotal - 5}} 个分类，可在「统计」查看 ›</view>
             </block>
         </view>
 

@@ -82,6 +82,20 @@ Page({
         wx.switchTab({ url: '/pages/stats/stats' });
     },
 
+    // 点分类行进明细，带上月份、分类 id 和名称，详情页自己按需排序。
+    onCategoryTap(event) {
+        const id = event.currentTarget.dataset.id;
+        const name = event.currentTarget.dataset.name || '分类';
+        if (!id) return;
+        wx.navigateTo({
+            url: '/pages/category-detail/category-detail?month=' + this.data.month
+                + '&categoryId=' + encodeURIComponent(id)
+                + '&name=' + encodeURIComponent(name)
+                + '&type=expense',
+            fail: () => wx.showToast({ title: '页面暂未开放', icon: 'none' }),
+        });
+    },
+
     onDeleteRecord(event) {
         const id = event.currentTarget.dataset.id;
         wx.showModal({

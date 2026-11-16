@@ -156,6 +156,10 @@ function decorateRecord(state, record) {
     return {
         id: record.id,
         type: record.type,
+        // categoryId / occurredAt / amount 是给分类详情页排序筛选用，页面展示仍用格式化字段。
+        categoryId: record.categoryId,
+        occurredAt: record.occurredAt,
+        amount: record.amount,
         categoryName: category ? category.name : '未分类',
         accountName: account ? account.name : '未指定',
         dateText: record.occurredAt.slice(5),

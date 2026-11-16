@@ -126,6 +126,18 @@
     padding: 16rpx 0;
 }
 
+/* 整行可点，进分类明细 */
+.cat-row-hover {
+    opacity: 0.55;
+}
+
+.cat-chevron {
+    flex-shrink: 0;
+    margin-left: 8rpx;
+    color: #c4c2bb;
+    font-size: 26rpx;
+}
+
 .cat-head {
     display: flex;
     align-items: center;

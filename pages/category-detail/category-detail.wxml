@@ -1,0 +1,42 @@
+<view class="page">
+    <view class="card summary">
+        <view class="summary-head">
+            <text class="summary-name">{{categoryName}}</text>
+            <text class="summary-tag">{{typeText}}</text>
+        </view>
+        <text class="summary-amount">¥ {{totalText}}</text>
+        <view class="summary-meta">
+            <text class="meta-item">{{monthLabel}}</text>
+            <text class="meta-item">共 {{recordCount}} 笔</text>
+            <text class="meta-item">占{{typeText}} {{percentText}}</text>
+            <text class="meta-item">笔均 ¥ {{avgText}}</text>
+        </view>
+    </view>
+
+    <view class="card">
+        <text class="section-title">排序方式</text>
+        <view class="sort-grid">
+            <view wx:for="{{sortOptions}}" wx:key="key" class="sort-item {{sortKey === item.key ? 'active' : ''}}" data-key="{{item.key}}" bindtap="onSortTap">{{item.label}}</view>
+        </view>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="state">正在加载…</view>
+    <view wx:elif="{{viewState === 'error'}}" class="state">{{errorText}}</view>
+
+    <block wx:else>
+        <view wx:if="{{rows.length === 0}}" class="card state">这个分类本月还没有记录</view>
+        <view wx:if="{{rows.length > 0}}" class="card records">
+            <view class="rec-row" wx:for="{{rows}}" wx:key="id" data-id="{{item.id}}" bindlongpress="onDeleteRecord">
+                <view class="rec-main">
+                    <view class="rec-head">
+                        <text class="rec-date">{{item.dateText}}</text>
+                        <text class="rec-account">{{item.accountName}}</text>
+                    </view>
+                    <text wx:if="{{item.noteText}}" class="rec-note">{{item.noteText}}</text>
+                </view>
+                <text class="rec-amount">{{item.amountText}}</text>
+            </view>
+            <text class="rec-hint">长按某一条可以删除</text>
+        </view>
+    </block>
+</view>
