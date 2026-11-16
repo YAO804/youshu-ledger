@@ -1,10 +1,12 @@
 const store = require('../../utils/ledger-store');
+const { seedSampleData } = require('../../utils/sample-data');
 
 Page({
     data: {
         recordCount: 0,
         csvText: '',
         resultText: '',
+        sampleText: '',
         exampleLines: [
             '日期,收支,金额,分类,账户,备注',
             '2026-11-01,支出,35.50,餐饮,微信,午餐',
@@ -24,6 +26,36 @@ Page({
 
     onTextInput(event) {
         this.setData({ csvText: event.detail.value });
+    },
+
+    onSeedSample() {
+        wx.showModal({
+            title: '生成测试样例数据',
+            content: '会先清空当前账本（本机或两人共享的云端），再写入 40 笔覆盖各种边界情况的账目，以及账户、自定义分类、预算和周期规则。确认继续？',
+            confirmText: '生成',
+            success: async (res) => {
+                if (!res.confirm) return;
+                await this.doSampleSeed();
+            },
+        });
+    },
+
+    async doSampleSeed() {
+        wx.showLoading({ title: '写入中…', mask: true });
+        const { data, error } = await seedSampleData(store);
+        wx.hideLoading();
+        if (error) {
+            this.setData({ sampleText: '生成失败：' + error.message });
+            wx.showToast({ title: error.message, icon: 'none' });
+            return;
+        }
+        this.setData({
+            recordCount: data.records,
+            sampleText: '已写入 ' + data.records + ' 笔账目、' + data.accounts + ' 个账户、'
+                + data.categories + ' 个分类、' + data.budgets + ' 条预算、' + data.rules + ' 条周期规则。'
+                + '覆盖 ' + data.months + '，回概览页即可看到效果。',
+        });
+        wx.showToast({ title: '样例数据已生成', icon: 'success' });
     },
 
     async buildCsv() {
