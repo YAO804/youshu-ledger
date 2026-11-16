@@ -24,7 +24,7 @@
     <view class="card">
         <text class="section-title">CSV 格式示例</text>
         <view wx:for="{{exampleLines}}" wx:key="*this">
-            <text class="hint-text">{{item}}</text>
+            <text class="hint-text csv-line">{{item}}</text>
         </view>
     </view>
 </view>

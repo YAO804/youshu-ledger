@@ -16,3 +16,9 @@
 .hint-text {
     display: block;
 }
+
+/* CSV 示例是无空格长串，必须允许任意位置换行才不会被裁掉 */
+.csv-line {
+    word-break: break-all;
+    padding: 8rpx;
+}

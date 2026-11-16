@@ -18,19 +18,33 @@ page {
 }
 
 .card {
+    box-sizing: border-box;
+    min-width: 0;
     background: var(--surface);
     border-radius: 20rpx;
     padding: 32rpx;
     margin-bottom: 24rpx;
 }
 
+/* 单行省略：flex 子项必须 min-width:0，否则小程序 text 会撑破容器把相邻内容挤出屏幕 */
+.ellipsis {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .section-title {
     display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
     align-items: baseline;
     justify-content: space-between;
     padding: 8rpx 8rpx 20rpx;
     font-size: 30rpx;
     font-weight: 500;
+    line-height: 1.4;
 }
 
 .section-hint {
@@ -42,6 +56,7 @@ page {
     padding: 80rpx 24rpx;
     text-align: center;
     font-size: 26rpx;
+    line-height: 1.6;
     color: var(--text-secondary);
 }
 
@@ -64,6 +79,7 @@ page {
 
 .row {
     display: flex;
+    min-width: 0;
     align-items: center;
     justify-content: space-between;
     min-height: 96rpx;
@@ -74,23 +90,34 @@ page {
     border-bottom: none;
 }
 
+/* 左标签不压缩，右值可收缩省略 */
 .row-label {
+    flex-shrink: 0;
+    min-width: 0;
     font-size: 28rpx;
 }
 
 .row-value {
+    min-width: 0;
+    margin-left: 16rpx;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: right;
     font-size: 26rpx;
     color: var(--text-secondary);
 }
 
 .form-row {
     display: flex;
+    min-width: 0;
     align-items: center;
     margin-bottom: 16rpx;
 }
 
 .form-input {
     flex: 1;
+    min-width: 0;
     height: 80rpx;
     padding: 0 20rpx;
     border-radius: 12rpx;
@@ -99,6 +126,7 @@ page {
 }
 
 .mini-btn {
+    flex-shrink: 0;
     margin-left: 12rpx;
     padding: 0 24rpx;
     line-height: 80rpx;
@@ -122,6 +150,7 @@ page {
 
 .list-item {
     display: flex;
+    min-width: 0;
     align-items: center;
     justify-content: space-between;
     padding: 20rpx 0;
@@ -135,30 +164,42 @@ page {
 .item-main {
     display: flex;
     flex: 1;
-    flex-direction: column;
     min-width: 0;
+    flex-direction: column;
 }
 
 .item-title {
+    display: block;
+    min-width: 0;
+    overflow-wrap: break-word;
     font-size: 28rpx;
 }
 
 .item-sub {
+    display: block;
+    min-width: 0;
     margin-top: 6rpx;
+    overflow-wrap: break-word;
     font-size: 22rpx;
+    line-height: 1.5;
     color: var(--text-secondary);
 }
 
 .item-actions {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
+    margin-left: 12rpx;
 }
 
+/* 长说明文字必须完整换行，不能省略 */
 .hint-text {
+    display: block;
     padding: 16rpx 8rpx;
     font-size: 24rpx;
-    color: var(--text-secondary);
     line-height: 1.6;
+    overflow-wrap: break-word;
+    color: var(--text-secondary);
 }
 
 .month-bar {
@@ -169,6 +210,7 @@ page {
 }
 
 .month-btn {
+    flex-shrink: 0;
     width: 64rpx;
     height: 64rpx;
     line-height: 60rpx;
@@ -180,6 +222,10 @@ page {
 }
 
 .month-label {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     font-size: 30rpx;
     font-weight: 500;
 }

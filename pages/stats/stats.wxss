@@ -113,3 +113,28 @@
 .budget-fill.over {
     background: var(--expense);
 }
+
+/* 左名称可省略、右数值保持完整，避免长分类名把金额挤出屏幕 */
+.cat-head,
+.budget-head,
+.trend-col {
+    min-width: 0;
+}
+
+.cat-head .row-label,
+.budget-head .row-label {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.cat-head .row-value,
+.budget-head .row-value {
+    flex-shrink: 0;
+    max-width: 55%;
+    white-space: nowrap;
+}
+
+.trend-label {
+    white-space: nowrap;
+}

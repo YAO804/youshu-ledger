@@ -241,3 +241,100 @@
 .record-amount {
     font-size: 30rpx;
 }
+
+/* 文字显示完整性：金额不折行、长名称可省略、指标值允许换行显示完整 */
+.hero-card,
+.hero-cell,
+.metric-card,
+.card-head,
+.cat-head,
+.acct-row,
+.record-main {
+    min-width: 0;
+}
+
+.hero-amount {
+    font-size: 60rpx;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hero-cell-value {
+    font-size: 32rpx;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.metric-card {
+    min-height: 130rpx;
+    justify-content: center;
+}
+
+.metric-value {
+    line-height: 1.35;
+    overflow-wrap: break-word;
+}
+
+.card-head .section-title {
+    min-width: 0;
+}
+
+.more {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.cat-name {
+    flex: 1;
+    min-width: 0;
+}
+
+.cat-name text {
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.cat-head .row-value {
+    flex-shrink: 0;
+    max-width: 55%;
+    white-space: nowrap;
+}
+
+.acct-row .row-label {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.acct-row .row-value {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.record-main {
+    flex: 1;
+}
+
+.record-category,
+.record-meta {
+    min-width: 0;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+}
+
+.record-amount {
+    flex-shrink: 0;
+    margin-left: 16rpx;
+    white-space: nowrap;
+}
+
+.budget-hint {
+    line-height: 1.6;
+    overflow-wrap: break-word;
+}
+
+.trend-label {
+    white-space: nowrap;
+}

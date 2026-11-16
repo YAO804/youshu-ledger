@@ -3,6 +3,7 @@
 }
 
 .default-tag {
+    flex-shrink: 0;
     display: inline-block;
     margin-left: 12rpx;
     padding: 2rpx 12rpx;
@@ -11,4 +12,18 @@
     color: var(--brand);
     font-size: 20rpx;
     vertical-align: middle;
+}
+
+/* 账户名可省略，「默认」标签始终保持完整可见 */
+.item-title {
+    display: flex;
+    align-items: center;
+    overflow: visible;
+}
+
+.item-name {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }

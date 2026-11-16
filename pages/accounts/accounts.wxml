@@ -19,7 +19,10 @@
         <view wx:if="{{rows.length === 0}}" class="state">还没有账户</view>
         <view wx:if="{{rows.length > 0}}" class="list-item" wx:for="{{rows}}" wx:key="id">
             <view class="item-main">
-                <text class="item-title">{{item.name}}<text wx:if="{{item.isDefault}}" class="default-tag">默认</text></text>
+                <view class="item-title">
+                    <text class="item-name">{{item.name}}</text>
+                    <text wx:if="{{item.isDefault}}" class="default-tag">默认</text>
+                </view>
                 <text class="item-sub">初始 ¥ {{item.initialBalanceText}} · 当前 ¥ {{item.balanceText}}</text>
             </view>
             <view class="item-actions">
