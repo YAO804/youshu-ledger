@@ -65,7 +65,12 @@ async function main() {
     check('空月份收支都为 0', blank.data.income === 0 && blank.data.expense === 0 && blank.data.balance === 0);
     const blankStats = await local.getStats(blankMonth);
     check('空月份统计不报错', blankStats.error === null, blankStats.error);
-    check('空月份趋势仍有 6 根柱', blankStats.data.trendRows.length === 6, blankStats.data.trendRows.length);
+    check('空月份趋势仍有 12 根柱', blankStats.data.trendRows.length === 12, blankStats.data.trendRows.length);
+    // 空月份本身在窗口内，收支为 0 时留最短桩，标签仍能对齐
+    const blankRow = blankStats.data.trendRows.filter((r) => r.id === blankMonth)[0];
+    check('空月份在趋势窗口内且只留最短桩',
+        !!blankRow && blankRow.incomeHeight === 4 && blankRow.expenseHeight === 4,
+        blankRow);
 
     // 负结余月
     const negative = await local.getMonthOverview(shiftMonth(thisMonth, -3));

@@ -6,20 +6,35 @@
     </view>
 
     <view class="card">
-        <text class="section-title">近 6 个月收支趋势</text>
+        <view class="card-head">
+            <text class="section-title">收支趋势</text>
+            <text class="trend-tip">近 12 个月</text>
+        </view>
         <view class="legend">
             <text class="legend-item income">■ 收入</text>
             <text class="legend-item expense">■ 支出</text>
+            <text class="legend-tip">点柱子切到该月 ›</text>
         </view>
-        <view class="trend-chart">
-            <view class="trend-col" wx:for="{{trendRows}}" wx:key="id">
-                <view class="trend-bars">
-                    <view class="bar income-bar" style="height: {{item.incomeHeight}}rpx"></view>
-                    <view class="bar expense-bar" style="height: {{item.expenseHeight}}rpx"></view>
+        <scroll-view class="trend-scroll" scroll-x scroll-with-animation scroll-into-view="{{scrollTarget}}">
+            <view class="trend-chart">
+                <view
+                    class="trend-col {{item.id === month ? 'active' : ''}}"
+                    wx:for="{{trendRows}}"
+                    wx:key="id"
+                    id="trend-{{item.id}}"
+                    data-month="{{item.id}}"
+                    bindtap="onTrendTap"
+                    hover-class="trend-col-hover"
+                >
+                    <view class="trend-bars">
+                        <view class="bar income-bar" style="height: {{item.incomeHeight}}%"></view>
+                        <view class="bar expense-bar" style="height: {{item.expenseHeight}}%"></view>
+                    </view>
+                    <text class="trend-label">{{item.label}}</text>
+                    <text class="trend-year">{{item.yearLabel || ' '}}</text>
                 </view>
-                <text class="trend-label">{{item.label}}</text>
             </view>
-        </view>
+        </scroll-view>
     </view>
 
     <view class="card">

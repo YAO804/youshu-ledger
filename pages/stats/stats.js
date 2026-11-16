@@ -6,6 +6,9 @@ Page({
         month: '',
         monthLabel: '',
         trendRows: [],
+        // scroll-view 的 scroll-into-view 目标，只在「切月份」时更新，
+        // 不跟着每次刷新走，否则用户拖到一半会被拽回去。
+        scrollTarget: '',
         categoryRows: [],
         budgetRows: [],
         viewState: 'loading',
@@ -13,7 +16,8 @@ Page({
     },
 
     onLoad() {
-        this.setData({ month: currentMonth() });
+        const month = currentMonth();
+        this.setData({ month, scrollTarget: 'trend-' + month });
     },
 
     async onShow() {
@@ -41,12 +45,26 @@ Page({
         });
     },
 
+    // 切月份统一走这里：fromTrend 为 true 时不需要滚动，
+    // 因为用户点的是已经看得见的那根柱子；箭头可能翻到窗口外，得滚过去。
+    switchMonth(next, fromTrend) {
+        if (!next || next === this.data.month) return;
+        const patch = { month: next, monthLabel: next };
+        if (!fromTrend) patch.scrollTarget = 'trend-' + next;
+        this.setData(patch, () => this.refresh());
+    },
+
     onPrevMonth() {
-        this.setData({ month: shiftMonth(this.data.month, -1) }, () => this.refresh());
+        this.switchMonth(shiftMonth(this.data.month, -1), false);
     },
 
     onNextMonth() {
-        this.setData({ month: shiftMonth(this.data.month, 1) }, () => this.refresh());
+        this.switchMonth(shiftMonth(this.data.month, 1), false);
+    },
+
+    // 点趋势图里的柱子直接跳到那个月，下面的分类占比、预算都跟着变。
+    onTrendTap(event) {
+        this.switchMonth(event.currentTarget.dataset.month, true);
     },
 
     // 点分类行看这个分类当月的全部明细。

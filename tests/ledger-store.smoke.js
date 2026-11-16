@@ -151,7 +151,11 @@ function dataOf(result) {
     check('银行卡余额由云端账目聚合', balances[2].balanceText === '8000.00', balances[2].balanceText);
 
     const stats = dataOf(await store.getStats(month));
-    check('趋势 6 个月', stats.trendRows.length === 6, stats.trendRows.length);
+    check('趋势窗口 12 个月', stats.trendRows.length === 12, stats.trendRows.length);
+    check('趋势按时间升序且末位为当月', stats.trendRows[11].id === month, stats.trendRows.map((r) => r.id));
+    check('趋势柱子带年份标签', !!stats.trendRows[0].yearLabel, stats.trendRows[0]);
+    check('趋势柱高在 1~100 之间', stats.trendRows.every((r) => r.incomeHeight >= 4 && r.incomeHeight <= 100),
+        stats.trendRows.map((r) => r.incomeHeight));
     check('分类占比 100%', stats.categoryRows[0].percentText === '100%', stats.categoryRows[0]);
 
     dataOf(await store.setBudget({ month, categoryId: '', amountCents: 10000 }));

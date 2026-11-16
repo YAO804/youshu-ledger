@@ -2,6 +2,7 @@
 // 纯函数，不碰 wx / 云 API，便于单测。
 // 设计参考主流开源记账项目的 Dashboard：指标卡 + 分类构成 + 趋势 + 最近记录 + 空态安全。
 const { fromCents, currentMonth } = require('./format');
+const { tailTrendRows } = require('./trend');
 
 const CATEGORY_COLORS = ['#2f6fed', '#f0a020', '#d9534f', '#2f9e6b', '#8a63d2'];
 const OTHER_COLOR = '#c8ced8';
@@ -21,7 +22,8 @@ function buildDashboard(overview, stats, accounts, month) {
     const expense = Number(overview.expense) || 0;
     const balance = Number(overview.balance) || 0;
     const categoryRows = (stats && stats.categoryRows) || [];
-    const trendRows = (stats && stats.trendRows) || [];
+    // 统计页的趋势窗口是一年，概览只画 6 根柱子，切完要按 6 个月重新归一化柱高。
+    const trendRows = tailTrendRows((stats && stats.trendRows) || [], 6);
     const budgetRows = (stats && stats.budgetRows) || [];
     const records = (overview && overview.records) || [];
     const accountRows = (accounts || []).map((a) => ({

@@ -2,13 +2,14 @@ const { cloud } = require('./cloud');
 const { createTableAccess } = require('./workbuddy-data-access');
 const {
     pad, toCents, fromCents, signedAmount, today, currentMonth,
-    shiftMonth, monthEnd, normalizeDate,
+    monthEnd, normalizeDate,
 } = require('./format');
 const {
     AVATAR_CUSTOM, DEFAULT_KEY, avatarDisplay, createDefaultProfile, ensureDefaults,
     normalizeAvatar, normalizeAvatarData, resolveAvatar,
 } = require('./profile');
 const { sortRecords } = require('./record-sort');
+const { trendMonths, buildTrendRows } = require('./trend');
 
 const EXPENSE_NAMES = ['餐饮', '交通', '购物', '居住', '日用', '娱乐', '医疗', '教育', '人情', '其他'];
 const INCOME_NAMES = ['工资', '奖金', '理财', '兼职', '其他'];
@@ -435,21 +436,7 @@ async function getStats(month) {
         };
     }).sort((a, b) => b.amount - a.amount);
 
-    const trendRows = [];
-    for (let i = 5; i >= 0; i -= 1) {
-        const m = shiftMonth(month, -i);
-        const s = summarize(recordsOfMonth(state, m));
-        trendRows.push({
-            id: m, label: m.slice(5) + '月',
-            incomeText: fromCents(s.income), expenseText: fromCents(s.expense),
-            income: s.income, expense: s.expense, incomeHeight: 4, expenseHeight: 4,
-        });
-    }
-    const maxTrend = Math.max(1, ...trendRows.map((t) => Math.max(t.income, t.expense)));
-    trendRows.forEach((t) => {
-        t.incomeHeight = Math.max(4, Math.round((t.income / maxTrend) * 100));
-        t.expenseHeight = Math.max(4, Math.round((t.expense / maxTrend) * 100));
-    });
+    const trendRows = buildTrendRows(trendMonths(month), (m) => summarize(recordsOfMonth(state, m)));
 
     const budgetRows = state.budgets.filter((b) => b.month === month).map((b) => {
         const used = b.categoryId
