@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "明细",
+  "navigationBarTitleText": "概览",
   "usingComponents": {
     "record-list": "/components/record-list/record-list"
   }
