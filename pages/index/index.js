@@ -34,16 +34,28 @@ Page({
     },
 
     onLoad() {
-        this.setData({ month: currentMonth() });
+        this.resetToCurrentMonth();
     },
 
     async onShow() {
+        // 概览也是 tab 页、实例常驻：翻了历史月份再切去别的 tab，回来还停在那个月。
+        // 和统计页同一条规则：每次显示回到当前月，但从分类明细返回时保留。
+        const returningFromDetail = this.leavingForDetail === true;
+        this.leavingForDetail = false;
+        if (!returningFromDetail) this.resetToCurrentMonth();
+
         const ready = await getApp().ensureReady();
         if (ready.error) {
             wx.showToast({ title: ready.error.message || '初始化失败', icon: 'none' });
             return;
         }
         await this.refresh();
+    },
+
+    resetToCurrentMonth() {
+        const month = currentMonth();
+        if (this.data.month === month) return;
+        this.setData({ month, monthLabel: month });
     },
 
     async refresh() {
@@ -88,12 +100,17 @@ Page({
         const id = event.currentTarget.dataset.id;
         const name = event.currentTarget.dataset.name || '分类';
         if (!id) return;
+        // 标记「这次离开是去看明细」，返回时 onShow 就不会把月份重置成当前月。
+        this.leavingForDetail = true;
         wx.navigateTo({
             url: '/pages/category-detail/category-detail?month=' + this.data.month
                 + '&categoryId=' + encodeURIComponent(id)
                 + '&name=' + encodeURIComponent(name)
                 + '&type=expense',
-            fail: () => wx.showToast({ title: '页面暂未开放', icon: 'none' }),
+            fail: () => {
+                this.leavingForDetail = false;
+                wx.showToast({ title: '页面暂未开放', icon: 'none' });
+            },
         });
     },
 
