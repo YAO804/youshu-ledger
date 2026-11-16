@@ -49,27 +49,43 @@
     white-space: nowrap;
 }
 
-/* 四选一排序，两列铺满，避免文字被挤成省略号 */
-.sort-grid {
+/* 排序：两个维度的分段控件（依据 / 方向），比四个平铺选项好读 */
+.sort-row {
     display: flex;
     min-width: 0;
-    flex-wrap: wrap;
+    align-items: center;
     margin-top: 20rpx;
 }
 
-.sort-item {
-    box-sizing: border-box;
-    width: 50%;
-    padding: 20rpx 8rpx;
-    border-radius: 12rpx;
-    font-size: 26rpx;
+.sort-label {
+    flex-shrink: 0;
+    width: 120rpx;
+    font-size: 24rpx;
+    color: var(--text-secondary);
+}
+
+.seg {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    padding: 6rpx;
+    border-radius: 14rpx;
+    background: #f2f2f0;
+}
+
+.seg-item {
+    flex: 1;
+    min-width: 0;
+    padding: 14rpx 6rpx;
+    border-radius: 10rpx;
+    font-size: 24rpx;
     text-align: center;
     color: var(--text-secondary);
     overflow-wrap: break-word;
 }
 
-.sort-item.active {
-    background: #eaf2ff;
+.seg-item.active {
+    background: var(--surface);
     color: var(--brand);
     font-weight: 500;
 }

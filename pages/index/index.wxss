@@ -123,7 +123,7 @@
 }
 
 .cat-row {
-    padding: 16rpx 0;
+    padding: 18rpx 0;
 }
 
 /* 整行可点，进分类明细 */
@@ -131,48 +131,83 @@
     opacity: 0.55;
 }
 
-.cat-chevron {
-    flex-shrink: 0;
-    margin-left: 8rpx;
-    color: #c4c2bb;
-    font-size: 26rpx;
-}
-
-.cat-head {
+/* 第一行：分类名 + 金额，金额右对齐、字号略大，是这一行的主角 */
+.cat-top {
     display: flex;
+    min-width: 0;
     align-items: center;
-    justify-content: space-between;
-    font-size: 26rpx;
 }
 
 .cat-name {
     display: flex;
+    flex: 1;
+    min-width: 0;
     align-items: center;
 }
 
+.cat-label {
+    min-width: 0;
+    font-size: 28rpx;
+    overflow-wrap: break-word;
+}
+
+.cat-amount {
+    flex-shrink: 0;
+    margin-left: 16rpx;
+    font-size: 28rpx;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.cat-chevron {
+    flex-shrink: 0;
+    margin-left: 4rpx;
+    color: #c4c2bb;
+    font-size: 28rpx;
+    line-height: 1;
+}
+
+/* 第二行：进度条 + 占比与笔数，两者同行不抢位置 */
+.cat-bot {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    margin-top: 12rpx;
+}
+
 .dot {
-    width: 16rpx;
-    height: 16rpx;
+    flex-shrink: 0;
+    width: 14rpx;
+    height: 14rpx;
     margin-right: 12rpx;
-    border-radius: 8rpx;
+    border-radius: 7rpx;
 }
 
 .cat-track {
-    height: 12rpx;
-    margin-top: 14rpx;
-    border-radius: 6rpx;
+    flex: 1;
+    min-width: 0;
+    height: 10rpx;
+    border-radius: 5rpx;
     overflow: hidden;
     background: #f0f1f3;
 }
 
 .cat-fill {
     height: 100%;
-    border-radius: 6rpx;
+    border-radius: 5rpx;
     background: var(--brand);
 }
 
 .cat-fill.over {
     background: var(--expense);
+}
+
+.cat-meta {
+    flex-shrink: 0;
+    margin-left: 16rpx;
+    font-size: 22rpx;
+    color: var(--text-secondary);
+    white-space: nowrap;
 }
 
 .cat-more {
@@ -272,7 +307,8 @@
 .hero-cell,
 .metric-card,
 .card-head,
-.cat-head,
+.cat-top,
+.cat-bot,
 .acct-row,
 .record-main {
     min-width: 0;
@@ -321,7 +357,7 @@
     overflow-wrap: break-word;
 }
 
-.cat-head .row-value {
+.cat-amount {
     flex-shrink: 0;
     max-width: 55%;
     white-space: nowrap;

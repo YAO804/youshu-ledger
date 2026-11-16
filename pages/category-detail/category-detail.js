@@ -1,6 +1,9 @@
 const store = require('../../utils/ledger-store');
 const { fromCents, currentMonth } = require('../../utils/format');
-const { SORT_OPTIONS, DEFAULT_SORT, sortRecords, isValidSort } = require('../../utils/record-sort');
+const {
+    SORT_FIELDS, DEFAULT_FIELD, DEFAULT_ORDER, DEFAULT_SORT,
+    orderOptions, toSortKey, parseSortKey, sortRecords, isValidSort,
+} = require('../../utils/record-sort');
 
 // 小程序可能已经把 query 解过一次码，这里不能盲目再解，遇到不合法的 % 要回落原值。
 function safeDecode(value) {
@@ -32,7 +35,10 @@ Page({
         type: 'expense',
         typeText: '支出',
         sortKey: DEFAULT_SORT,
-        sortOptions: SORT_OPTIONS,
+        sortField: DEFAULT_FIELD,
+        sortOrder: DEFAULT_ORDER,
+        sortFields: SORT_FIELDS,
+        orderOptions: orderOptions(DEFAULT_FIELD),
         rows: [],
         recordCount: 0,
         totalText: '0.00',
@@ -46,6 +52,8 @@ Page({
         const month = query.month || currentMonth();
         const type = query.type === 'income' ? 'income' : 'expense';
         const categoryName = query.name ? safeDecode(query.name) : '分类';
+        const sortKey = isValidSort(query.sort) ? query.sort : DEFAULT_SORT;
+        const parsed = parseSortKey(sortKey);
 
         this.rawRecords = [];
 
@@ -56,7 +64,10 @@ Page({
             categoryName,
             type,
             typeText: type === 'income' ? '收入' : '支出',
-            sortKey: isValidSort(query.sort) ? query.sort : DEFAULT_SORT,
+            sortKey,
+            sortField: parsed.field,
+            sortOrder: parsed.order,
+            orderOptions: orderOptions(parsed.field),
         });
 
         wx.setNavigationBarTitle({ title: categoryName + ' 明细' });
@@ -104,10 +115,25 @@ Page({
         this.setData({ rows: sorted.map(toRow) });
     },
 
-    onSortTap(event) {
-        const key = event.currentTarget.dataset.key;
-        if (!key || key === this.data.sortKey) return;
-        this.setData({ sortKey: key });
+    // 换依据时方向保持不变（时间·倒序 → 金额·从高到低），符合直觉。
+    onFieldTap(event) {
+        const field = event.currentTarget.dataset.key;
+        if (!field || field === this.data.sortField) return;
+        this.setData({
+            sortField: field,
+            orderOptions: orderOptions(field),
+            sortKey: toSortKey(field, this.data.sortOrder),
+        });
+        this.applySort();
+    },
+
+    onOrderTap(event) {
+        const order = event.currentTarget.dataset.key;
+        if (!order || order === this.data.sortOrder) return;
+        this.setData({
+            sortOrder: order,
+            sortKey: toSortKey(this.data.sortField, order),
+        });
         this.applySort();
     },
 

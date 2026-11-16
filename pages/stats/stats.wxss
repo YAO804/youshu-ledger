@@ -76,7 +76,7 @@
 }
 
 .cat-row {
-    padding: 14rpx 0;
+    padding: 18rpx 0;
 }
 
 /* 整行可点，进分类明细 */
@@ -84,21 +84,68 @@
     opacity: 0.55;
 }
 
-.cat-chevron {
-    flex-shrink: 0;
-    margin-left: 8rpx;
-    color: #c4c2bb;
-    font-size: 26rpx;
+/* 第一行：分类名 + 金额 */
+.cat-top {
+    display: flex;
+    min-width: 0;
+    align-items: center;
 }
 
-.cat-head,
+.cat-label {
+    flex: 1;
+    min-width: 0;
+    font-size: 28rpx;
+    overflow-wrap: break-word;
+}
+
+.cat-amount {
+    flex-shrink: 0;
+    margin-left: 16rpx;
+    font-size: 28rpx;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.cat-chevron {
+    flex-shrink: 0;
+    margin-left: 4rpx;
+    color: #c4c2bb;
+    font-size: 28rpx;
+    line-height: 1;
+}
+
+/* 第二行：进度条 + 占比与笔数 */
+.cat-bot {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    margin-top: 12rpx;
+}
+
+.cat-meta {
+    flex-shrink: 0;
+    margin-left: 16rpx;
+    font-size: 22rpx;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
 .budget-head {
     display: flex;
+    min-width: 0;
     align-items: center;
     justify-content: space-between;
 }
 
-.cat-track,
+.cat-track {
+    flex: 1;
+    min-width: 0;
+    height: 10rpx;
+    border-radius: 5rpx;
+    background: #f0f1f3;
+    overflow: hidden;
+}
+
 .budget-track {
     height: 12rpx;
     margin-top: 14rpx;
@@ -128,20 +175,17 @@
 }
 
 /* 左名称可省略、右数值保持完整，避免长分类名把金额挤出屏幕 */
-.cat-head,
 .budget-head,
 .trend-col {
     min-width: 0;
 }
 
-.cat-head .row-label,
 .budget-head .row-label {
     flex: 1;
     min-width: 0;
     overflow-wrap: break-word;
 }
 
-.cat-head .row-value,
 .budget-head .row-value {
     flex-shrink: 0;
     max-width: 55%;

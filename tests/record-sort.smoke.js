@@ -1,8 +1,11 @@
-// 回归测试：分类明细的四种排序必须都对，且不能篡改入参数组。
+// 回归测试：分类明细的排序必须都对，且「依据 + 方向」两个维度能正确换算成排序 key。
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const { SORT_OPTIONS, DEFAULT_SORT, sortRecords, isValidSort } = require(path.join(root, 'utils/record-sort.js'));
+const {
+    SORT_FIELDS, DEFAULT_FIELD, DEFAULT_ORDER, DEFAULT_SORT,
+    orderOptions, toSortKey, parseSortKey, sortRecords, isValidSort,
+} = require(path.join(root, 'utils/record-sort.js'));
 
 let passed = 0;
 function check(name, condition, detail) {
@@ -26,9 +29,20 @@ function ids(list) {
     return list.map((row) => row.id).join(',');
 }
 
-check('四个排序选项', SORT_OPTIONS.length === 4, SORT_OPTIONS.map((o) => o.key));
-check('默认按时间倒序', DEFAULT_SORT === 'time-desc', DEFAULT_SORT);
-check('合法 key 通过校验', isValidSort('amount-asc') && !isValidSort('foo'));
+// 两个维度：依据（时间/金额）+ 方向（desc/asc）
+check('两个排序依据', SORT_FIELDS.length === 2, SORT_FIELDS.map((f) => f.key));
+check('默认按时间倒序', DEFAULT_FIELD === 'time' && DEFAULT_ORDER === 'desc' && DEFAULT_SORT === 'time-desc');
+
+check('时间的方向文案', orderOptions('time').map((o) => o.label).join('/') === '最新在前/最早在前', orderOptions('time'));
+check('金额的方向文案', orderOptions('amount').map((o) => o.label).join('/') === '从高到低/从低到高', orderOptions('amount'));
+check('未知依据按时间处理', orderOptions('foo').map((o) => o.key).join(',') === 'desc,asc');
+
+check('换算 key：时间倒序', toSortKey('time', 'desc') === 'time-desc');
+check('换算 key：金额正序', toSortKey('amount', 'asc') === 'amount-asc');
+check('换算 key：非法值回落', toSortKey('x', 'y') === 'time-desc');
+check('解析 key：金额正序', JSON.stringify(parseSortKey('amount-asc')) === JSON.stringify({ field: 'amount', order: 'asc' }));
+check('解析 key：非法输入回落', JSON.stringify(parseSortKey('')) === JSON.stringify({ field: 'time', order: 'desc' }));
+check('合法 key 校验', isValidSort('amount-asc') && !isValidSort('foo'));
 
 check('时间倒序：最新在前', ids(sortRecords(rows, 'time-desc')) === 'd,b,c,a', ids(sortRecords(rows, 'time-desc')));
 check('时间正序：最早在前', ids(sortRecords(rows, 'time-asc')) === 'a,c,b,d', ids(sortRecords(rows, 'time-asc')));

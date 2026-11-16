@@ -126,6 +126,16 @@ async function main() {
     check('餐饮分类本月 3 笔', diningRows.length === 3, diningRows.length);
     check('餐饮分类合计 175.50', diningRows.reduce((sum, r) => sum + r.amount, 0) === 17550, diningRows.map((r) => r.amount));
 
+    // 分类行要同时显示占比和笔数，getStats 必须给出每类笔数
+    const monthStats = await local.getStats(thisMonth);
+    const statByName = {};
+    monthStats.data.categoryRows.forEach((row) => { statByName[row.name] = row; });
+    check('分类行带笔数', statByName['餐饮'] && statByName['餐饮'].count === 3, statByName['餐饮']);
+    check('单笔分类笔数为 1', statByName['居住'] && statByName['居住'].count === 1, statByName['居住']);
+    check('笔数合计等于支出笔数',
+        Object.keys(statByName).reduce((sum, name) => sum + statByName[name].count, 0) === 14,
+        Object.keys(statByName).reduce((sum, name) => sum + statByName[name].count, 0));
+
     console.log('\nTOTAL PASS ' + passed);
 }
 

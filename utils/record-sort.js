@@ -1,14 +1,39 @@
 // 分类详情页的排序规则。纯函数，不依赖 wx，便于单测。
 // 记录上的 occurredAt 是 YYYY-MM-DD，可以直接按字符串比较；金额是整数分。
+//
+// 界面上拆成两个维度（依据 + 方向），比四个平铺选项更好懂：
+//   依据：按时间 / 按金额
+//   方向：最新在前·最早在前  或  从高到低·从低到高
+// 最终归一成 'time-desc' 这类 key 交给 sortRecords。
 
-const SORT_OPTIONS = [
-    { key: 'time-desc', label: '最新在前', group: '时间' },
-    { key: 'time-asc', label: '最早在前', group: '时间' },
-    { key: 'amount-desc', label: '金额从高到低', group: '金额' },
-    { key: 'amount-asc', label: '金额从低到高', group: '金额' },
+const SORT_FIELDS = [
+    { key: 'time', label: '按时间' },
+    { key: 'amount', label: '按金额' },
 ];
 
+const DEFAULT_FIELD = 'time';
+const DEFAULT_ORDER = 'desc';
 const DEFAULT_SORT = 'time-desc';
+
+// 方向文案跟着依据变，避免「倒序」这种抽象说法。
+function orderOptions(field) {
+    return field === 'amount'
+        ? [{ key: 'desc', label: '从高到低' }, { key: 'asc', label: '从低到高' }]
+        : [{ key: 'desc', label: '最新在前' }, { key: 'asc', label: '最早在前' }];
+}
+
+function toSortKey(field, order) {
+    return (field === 'amount' ? 'amount' : 'time') + '-' + (order === 'asc' ? 'asc' : 'desc');
+}
+
+function parseSortKey(key) {
+    if (typeof key !== 'string') return { field: DEFAULT_FIELD, order: DEFAULT_ORDER };
+    const parts = key.split('-');
+    return {
+        field: parts[0] === 'amount' ? 'amount' : 'time',
+        order: parts[1] === 'asc' ? 'asc' : 'desc',
+    };
+}
 
 function dateText(record) {
     return String(record && record.occurredAt ? record.occurredAt : '');
@@ -46,7 +71,10 @@ function sortRecords(records, key) {
 }
 
 function isValidSort(key) {
-    return SORT_OPTIONS.some((item) => item.key === key);
+    return key === 'time-desc' || key === 'time-asc' || key === 'amount-desc' || key === 'amount-asc';
 }
 
-module.exports = { SORT_OPTIONS, DEFAULT_SORT, sortRecords, isValidSort };
+module.exports = {
+    SORT_FIELDS, DEFAULT_FIELD, DEFAULT_ORDER, DEFAULT_SORT,
+    orderOptions, toSortKey, parseSortKey, sortRecords, isValidSort,
+};
