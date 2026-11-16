@@ -8,7 +8,7 @@
         </view>
         <view class="amount-row">
             <text class="amount-symbol">¥</text>
-            <input class="amount-input" type="digit" placeholder="0.00" value="{{amount}}" bindinput="onAmountInput" />
+            <input class="amount-input" type="digit" placeholder="0.00" placeholder-class="amount-placeholder" value="{{amount}}" bindinput="onAmountInput" />
         </view>
     </view>
 
@@ -17,18 +17,21 @@
             <view class="row">
                 <text class="row-label">分类</text>
                 <text class="row-value">{{categoryName}}</text>
+                <text class="row-chevron">›</text>
             </view>
         </picker>
         <picker mode="selector" range="{{accountNames}}" value="{{accountIndex}}" bindchange="onAccountChange">
             <view class="row">
                 <text class="row-label">支付账户</text>
                 <text class="row-value">{{accountName}}</text>
+                <text class="row-chevron">›</text>
             </view>
         </picker>
         <picker mode="date" value="{{date}}" bindchange="onDateChange">
             <view class="row">
                 <text class="row-label">日期</text>
                 <text class="row-value">{{date}}</text>
+                <text class="row-chevron">›</text>
             </view>
         </picker>
         <view class="row">
@@ -37,8 +40,8 @@
         </view>
     </view>
 
-    <button class="btn-primary" disabled="{{saving}}" bindtap="onSubmit">{{saving ? '保存中…' : '保存'}}</button>
-    <text class="form-hint">{{hintText}}</text>
+    <button class="btn-primary save-btn" hover-class="save-btn-hover" disabled="{{saving}}" bindtap="onSubmit">{{saving ? '保存中…' : '保存'}}</button>
+    <text wx:if="{{hintText}}" class="form-hint">{{hintText}}</text>
 
     <!-- 就地确认：保存后不回概览页，刚记的那笔立刻出现在这里，记错了直接长按删 -->
     <view class="card recent-card">
