@@ -139,6 +139,13 @@ function dataOf(result) {
     check('月结余 7964.50', overview.balanceText === '7964.50', overview.balanceText);
     check('账目数 2', overview.recordCount === 2, overview.recordCount);
 
+    // 记一笔页的「最近记录」走同一个接口，云端实现也必须跨月倒序。
+    const recentCloud = dataOf(await store.getRecentRecords(5));
+    check('云端最近记录倒序', recentCloud.length === 2
+        && recentCloud[0].occurredAt === month + '-05'
+        && recentCloud[1].occurredAt === month + '-01', recentCloud.map((r) => r.occurredAt));
+    check('云端最近记录带分类名', !!recentCloud[0].categoryName && !!recentCloud[0].accountName, recentCloud[0]);
+
     const balances = dataOf(await store.getAccounts());
     check('微信余额由云端账目聚合', balances[0].balanceText === '-35.50', balances[0].balanceText);
     check('银行卡余额由云端账目聚合', balances[2].balanceText === '8000.00', balances[2].balanceText);

@@ -24,7 +24,7 @@ const OFFLINE_RE = /url not in domain|fail url not in|request:fail|net::err|time
 const OFFLINE_NOTICE = '云端连接失败（域名未加入小程序 request 白名单），已切换为本机账本，两台手机不会同步。';
 
 const METHODS = [
-    'init', 'getMonthOverview', 'getStats',
+    'init', 'getMonthOverview', 'getRecentRecords', 'getStats',
     'getAccounts', 'createAccount', 'updateAccount', 'removeAccount',
     'getCategories', 'createCategory', 'removeCategory',
     'getRecord', 'createRecord', 'updateRecord', 'removeRecord',

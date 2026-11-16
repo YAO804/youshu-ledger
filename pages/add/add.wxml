@@ -1,4 +1,6 @@
 <view class="page">
+    <view wx:if="{{storageNotice}}" class="storage-banner">{{storageNotice}}</view>
+
     <view class="card">
         <view class="type-switch">
             <view class="type-item {{formType === 'expense' ? 'active' : ''}}" data-type="expense" bindtap="onTypeChange">支出</view>
@@ -37,4 +39,18 @@
 
     <button class="btn-primary" disabled="{{saving}}" bindtap="onSubmit">{{saving ? '保存中…' : '保存'}}</button>
     <text class="form-hint">{{hintText}}</text>
+
+    <!-- 就地确认：保存后不回概览页，刚记的那笔立刻出现在这里，记错了直接长按删 -->
+    <view class="card recent-card">
+        <view class="card-head">
+            <text class="section-title">最近记录</text>
+            <text class="recent-hint">最近 5 笔 · 含往月</text>
+        </view>
+        <record-list
+            records="{{recentRecords}}"
+            empty="还没有账目，保存后就会出现在这里"
+            hint="长按账目可删除"
+            bind:delete="onDeleteRecord"
+        />
+    </view>
 </view>

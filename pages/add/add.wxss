@@ -64,3 +64,17 @@
     overflow-wrap: break-word;
     color: var(--text-secondary);
 }
+
+/* 最近记录卡：放在保存按钮下方，作为「刚记的那笔」的即时确认 */
+.recent-card {
+    margin-top: 32rpx;
+    margin-bottom: 0;
+}
+
+.recent-hint {
+    flex-shrink: 0;
+    padding: 8rpx;
+    font-size: 22rpx;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}

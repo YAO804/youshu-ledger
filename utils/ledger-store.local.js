@@ -6,6 +6,7 @@ const {
     AVATAR_CUSTOM, DEFAULT_KEY, avatarDisplay, ensureDefaults,
     normalizeAvatar, normalizeAvatarData, resolveAvatar,
 } = require('./profile');
+const { sortRecords } = require('./record-sort');
 
 const STORAGE_KEY = 'youshu_ledger_v1';
 
@@ -277,6 +278,17 @@ async function getMonthOverview(month) {
         records,
         budgetHint,
     });
+}
+
+// 最近 N 笔，跨月份按时间倒序。记一笔页用它做「刚记的那笔」即时确认，
+// 语义和概览的「本月账目」不同：不跟月份走，补记上月也能立刻看到。
+async function getRecentRecords(limit) {
+    const state = load();
+    const size = Math.min(Math.max(Number(limit) || 5, 1), 50);
+    const rows = sortRecords(state.records, 'time-desc')
+        .slice(0, size)
+        .map((r) => decorateRecord(state, r));
+    return ok(rows);
 }
 
 async function getStats(month) {
@@ -800,6 +812,7 @@ module.exports = {
     clearLocal,
     init,
     getMonthOverview,
+    getRecentRecords,
     getStats,
     getAccounts,
     createAccount,

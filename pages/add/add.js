@@ -1,5 +1,8 @@
 const store = require('../../utils/ledger-store');
 const { toCents, today } = require('../../utils/format');
+const { confirmRemoveRecord } = require('../../utils/record-actions');
+
+const RECENT_LIMIT = 5;
 
 Page({
     data: {
@@ -17,6 +20,8 @@ Page({
         note: '',
         hintText: '',
         saving: false,
+        recentRecords: [],
+        storageNotice: '',
     },
 
     onLoad() {
@@ -30,6 +35,7 @@ Page({
             return;
         }
         await this.loadOptions();
+        await this.loadRecent();
     },
 
     async loadOptions() {
@@ -45,6 +51,15 @@ Page({
             categoryIndex: 0,
             categoryName: categories.data.length ? categories.data[0].name : '请先添加分类',
         });
+    },
+
+    // 最近记录是保存后的即时确认，取不到就保持原样，不打断记账主流程。
+    async loadRecent() {
+        const { data, error } = await store.getRecentRecords(RECENT_LIMIT);
+        // 降级可能就发生在这次请求里，请求后再同步一次提示条。
+        this.setData({ storageNotice: store.notice });
+        if (error || !data) return;
+        this.setData({ recentRecords: data });
     },
 
     async onTypeChange(event) {
@@ -109,8 +124,17 @@ Page({
             wx.showToast({ title: error.message, icon: 'none' });
             return;
         }
+        // 分类、账户、日期都保留，方便同一场景连着记；只清金额和备注。
         this.setData({ amount: '', note: '', hintText: '' });
+        if (typeof wx.hideKeyboard === 'function') wx.hideKeyboard();
         wx.showToast({ title: '已保存', icon: 'success' });
-        wx.switchTab({ url: '/pages/index/index' });
+        // 不跳回概览：停留本页，让刚记的那笔出现在下方列表里，可以接着记下一笔。
+        await this.loadRecent();
+    },
+
+    async onDeleteRecord(event) {
+        const id = event.detail && event.detail.id;
+        const removed = await confirmRemoveRecord(id);
+        if (removed) await this.loadRecent();
     },
 });

@@ -8,6 +8,7 @@ const {
     AVATAR_CUSTOM, DEFAULT_KEY, avatarDisplay, createDefaultProfile, ensureDefaults,
     normalizeAvatar, normalizeAvatarData, resolveAvatar,
 } = require('./profile');
+const { sortRecords } = require('./record-sort');
 
 const EXPENSE_NAMES = ['餐饮', '交通', '购物', '居住', '日用', '娱乐', '医疗', '教育', '人情', '其他'];
 const INCOME_NAMES = ['工资', '奖金', '理财', '兼职', '其他'];
@@ -390,6 +391,19 @@ async function getMonthOverview(month) {
         records,
         budgetHint,
     });
+}
+
+// 最近 N 笔，跨月份按时间倒序。记一笔页用它做「刚记的那笔」即时确认，
+// 语义和概览的「本月账目」不同：不跟月份走，补记上月也能立刻看到。
+async function getRecentRecords(limit) {
+    const loaded = await loadState();
+    if (loaded.error) return loaded;
+    const state = loaded.data;
+    const size = Math.min(Math.max(Number(limit) || 5, 1), 50);
+    const rows = sortRecords(state.records, 'time-desc')
+        .slice(0, size)
+        .map((r) => decorateRecord(state, r));
+    return ok(rows);
 }
 
 async function getStats(month) {
@@ -830,6 +844,7 @@ async function resetAll() {
 module.exports = {
     init,
     getMonthOverview,
+    getRecentRecords,
     getStats,
     getAccounts,
     createAccount,
