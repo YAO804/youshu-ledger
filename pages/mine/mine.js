@@ -5,8 +5,10 @@ Page({
         avatarText: '?',
         nicknameInput: '',
         recordCount: 0,
-        sharedMode: store.storageMode === 'shared',
+        storageMode: store.mode,
+        cloudAvailable: store.cloudAvailable,
         storageText: '两人共享',
+        modeHint: '',
         notice: '',
         menuGroups: [
             {
@@ -47,17 +49,81 @@ Page({
         this.applyStorageState();
     },
 
-    // 云端降级后存储方式会变，不能像以前那样在模块顶层固定下来。
+    // 存储方式可以手动切换，也可能被云端降级改变，所以每次进页面都重算一次。
     applyStorageState() {
-        const sharedMode = store.storageMode === 'shared';
-        const fallback = sharedMode
-            ? '两个人打开就是同一本账，不用注册、不用登录。清空会删除共享账本的全部记录，操作前建议先导出 CSV 备份。'
-            : '账目暂存在本机，换手机不会带走。清空会删除本机全部记录，操作前建议先导出 CSV 备份。';
+        const mode = store.mode;
+        const cloudMode = mode === 'cloud';
+        const forced = store.notice;
         this.setData({
-            sharedMode,
-            storageText: sharedMode ? '两人共享' : '本机账本',
-            notice: store.notice || fallback,
+            storageMode: mode,
+            cloudAvailable: store.cloudAvailable,
+            storageText: cloudMode ? '两人共享' : '本机账本',
+            // 顶部那条黄色说明：有强制降级原因就显示原因，否则显示当前模式的常规说明。
+            notice: forced || (cloudMode
+                ? '两个人打开就是同一本账，不用注册、不用登录。清空会删除共享账本的全部记录，操作前建议先导出 CSV 备份。'
+                : '账目只存在这台手机上，换手机不会带走。清空只会删除本机记录，云端数据不受影响。'),
+            modeHint: forced || (cloudMode
+                ? '当前使用云端共享账本，两个人的手机看到的是同一份数据。'
+                : '当前使用本机账本，数据不会同步到对方的手机，也不会自动上传到云端。'),
         });
+    },
+
+    async onModeTap(event) {
+        const target = event.currentTarget.dataset.mode;
+        if (!target || target === this.data.storageMode) return;
+
+        if (target === 'cloud' && !this.data.cloudAvailable) {
+            wx.showModal({
+                title: '云端模式不可用',
+                content: '云服务组件没有加载起来，只能使用本机账本。\n\n如果是开发者，请先在微信开发者工具执行「工具 → 构建 npm」，再确认云服务域名已配置。',
+                showCancel: false,
+                confirmText: '知道了',
+            });
+            return;
+        }
+
+        wx.showModal({
+            title: target === 'cloud' ? '切换到云端共享' : '切换到本机账本',
+            content: target === 'cloud'
+                ? '切换后看到的是云端共享账本。本机账本里的账目不会自动上传，需要先在数据页导出 CSV，切换后再导入。确认切换？'
+                : '切换后看到的是本机账本，云端数据不会被删除，随时可以切回来。确认切换？',
+            confirmText: '切换',
+            success: async (res) => {
+                if (!res.confirm) return;
+                await this.doSwitchMode(target);
+            },
+        });
+    },
+
+    async doSwitchMode(target) {
+        wx.showLoading({ title: '切换中…', mask: true });
+        const { error } = await store.setMode(target);
+        wx.hideLoading();
+
+        if (error) {
+            // 探测没通过时不改状态，明确告诉用户只能用本机。
+            wx.showModal({
+                title: '无法切换到云端模式',
+                content: error.message + '\n\n开发者需要把 mp-api.app.workbuddy.host 加入小程序后台的 request 合法域名。',
+                showCancel: false,
+                confirmText: '知道了',
+            });
+            this.applyStorageState();
+            return;
+        }
+
+        // 换了存储方式就要重新 init，页面栈里其他页会分别在 onShow 时刷新。
+        const app = getApp();
+        app.resetReady();
+        const ready = await app.ensureReady();
+        if (ready.error) {
+            wx.showToast({ title: ready.error.message || '初始化失败', icon: 'none' });
+            return;
+        }
+
+        this.applyStorageState();
+        await this.refresh();
+        wx.showToast({ title: target === 'cloud' ? '已切换到云端' : '已切换到本机', icon: 'success' });
     },
 
     async refresh() {
@@ -102,7 +168,7 @@ Page({
     onReset() {
         wx.showModal({
             title: '清空全部数据',
-            content: this.data.sharedMode
+            content: this.data.storageMode === 'cloud'
                 ? '共享账本里的所有账目、账户、分类、预算和周期规则都会被删除，且无法恢复。建议先导出备份。确认清空？'
                 : '本机所有账目、账户、分类、预算和周期规则都会被删除，且无法恢复。建议先导出备份。确认清空？',
             confirmText: '确认清空',

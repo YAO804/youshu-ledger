@@ -16,4 +16,10 @@ App({
         }
         return this.readyPromise;
     },
+
+    // 切换存储方式后要重新 init，否则用的还是上一个模式的结果。
+    resetReady() {
+        this.readyPromise = null;
+        this.globalData.storageMode = store.storageMode;
+    },
 });

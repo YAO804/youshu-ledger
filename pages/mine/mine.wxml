@@ -10,6 +10,15 @@
 
     <view class="notice">{{notice}}</view>
 
+    <view class="card">
+        <text class="section-title">数据存储方式</text>
+        <view class="mode-switch">
+            <view class="mode-option {{storageMode === 'local' ? 'active' : ''}}" data-mode="local" bindtap="onModeTap">本机账本</view>
+            <view class="mode-option {{storageMode === 'cloud' ? 'active' : ''}} {{cloudAvailable ? '' : 'disabled'}}" data-mode="cloud" bindtap="onModeTap">云端共享</view>
+        </view>
+        <text class="hint-text">{{modeHint}}</text>
+    </view>
+
     <view class="card" wx:for="{{menuGroups}}" wx:for-item="group" wx:key="key">
         <text class="group-title">{{group.title}}</text>
         <view class="row" wx:for="{{group.items}}" wx:for-item="item" wx:key="key" data-path="{{item.path}}" bindtap="onMenuTap">
