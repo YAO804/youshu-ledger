@@ -182,6 +182,19 @@ function dataOf(result) {
     check('昵称写入云端', savedProfile.nickname === '测试用户', savedProfile);
     check('头像写入云端', savedProfile.avatar === 'fox' && savedProfile.avatarEmoji === '🦊', savedProfile);
 
+    // 上传自定义头像：图片以 data URI 存 avatar_data，取出时不用再拼网络地址。
+    const customData = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ==';
+    dataOf(await store.setProfile({ nickname: '测试用户', avatar: 'custom', avatarData: customData }));
+    const customProfile = dataOf(await store.getProfile());
+    check('自定义头像写入云端', customProfile.avatar === 'custom', customProfile);
+    check('自定义头像取出成图片', customProfile.avatarImage === customData, customProfile);
+    check('自定义头像不再出 emoji', customProfile.avatarEmoji === '', customProfile);
+
+    // 改回内置头像时要把图片清掉，否则会留着上一次上传的图。
+    dataOf(await store.setProfile({ nickname: '测试用户', avatar: 'cat' }));
+    const backProfile = dataOf(await store.getProfile());
+    check('换回内置头像清掉图片', backProfile.avatar === 'cat' && backProfile.avatarData === '', backProfile);
+
     dataOf(await store.resetAll());
     check('清空后归零', dataOf(await store.getMonthOverview(month)).recordCount === 0);
     check('清空账目不重置昵称头像', dataOf(await store.getProfile()).nickname === '测试用户');

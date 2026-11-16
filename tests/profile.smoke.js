@@ -44,4 +44,22 @@ check('已知头像返回对应表情', profile.avatarEmoji('fox') === '🦊');
 check('换头像循环一圈', profile.nextAvatar(keys[keys.length - 1]) === keys[0], profile.nextAvatar(keys[keys.length - 1]));
 check('头像选项数量与列表一致', profile.avatarOptions().length === profile.AVATARS.length);
 
+// 自定义上传头像：avatar 存 'custom'，图片本身是 data URI。
+const CUSTOM = profile.AVATAR_CUSTOM;
+const SAMPLE = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ==';
+check('custom 是合法头像', profile.normalizeAvatar(CUSTOM) === CUSTOM);
+check('custom 缺图时补内置头像',
+    profile.ensureDefaults({ nickname: '有数', avatar: CUSTOM }).avatar !== CUSTOM);
+check('custom 有图时视为齐全',
+    profile.ensureDefaults({ nickname: '有数', avatar: CUSTOM, avatarData: SAMPLE }) === null);
+check('合法 data URI 通过校验', profile.normalizeAvatarData(SAMPLE) === SAMPLE);
+check('网络地址不当作头像图', profile.normalizeAvatarData('https://a.com/b.png') === '');
+check('超长图片被拒', profile.normalizeAvatarData(
+    'data:image/png;base64,' + 'A'.repeat(profile.MAX_AVATAR_DATA_CHARS)
+) === '');
+check('自定义头像渲染成图片', profile.avatarDisplay(CUSTOM, SAMPLE).image === SAMPLE);
+check('自定义头像不再出 emoji', profile.avatarDisplay(CUSTOM, SAMPLE).emoji === '');
+check('内置头像渲染成 emoji', profile.avatarDisplay('fox', '').emoji === '🦊');
+check('custom 缺图回落到 emoji', !!profile.avatarDisplay(CUSTOM, '').emoji);
+
 console.log('\nTOTAL PASS ' + passed);

@@ -1,14 +1,15 @@
 <view class="page">
     <view class="card profile">
         <view class="avatar" bindtap="onAvatarTap">
-            <text class="avatar-emoji">{{avatarEmoji}}</text>
+            <image wx:if="{{avatarImage}}" class="avatar-img" src="{{avatarImage}}" mode="aspectFill" />
+            <text wx:else class="avatar-emoji">{{avatarEmoji}}</text>
         </view>
         <view class="profile-info">
             <block wx:if="{{editing}}">
                 <input class="nickname-input" value="{{nicknameInput}}" focus="{{editing}}" maxlength="12"
                     placeholder="给这本账起个名字" confirm-type="done"
                     bindinput="onNicknameInput" bindconfirm="onSaveNickname" />
-                <text class="profile-desc">点头像可以换一个 · 共 {{recordCount}} 笔账目 · {{storageText}}</text>
+                <text class="profile-desc">点头像换一个，或在下面上传自己的照片 · 共 {{recordCount}} 笔账目 · {{storageText}}</text>
             </block>
             <block wx:else>
                 <view class="nickname-row">
@@ -30,7 +31,12 @@
                 wx:for="{{avatarOptions}}" wx:key="key" data-key="{{item.key}}" bindtap="onPickAvatar">
                 <text class="avatar-option-emoji">{{item.emoji}}</text>
             </view>
+            <view class="avatar-option avatar-upload {{draftAvatar === 'custom' ? 'active' : ''}}" bindtap="onChooseAvatar">
+                <image wx:if="{{draftImage}}" class="avatar-option-img" src="{{draftImage}}" mode="aspectFill" />
+                <text wx:else class="avatar-upload-plus">＋</text>
+            </view>
         </view>
+        <text class="picker-hint">最后一个可以上传自己的照片，会自动裁成方形</text>
     </view>
 
     <view class="edit-bar" wx:if="{{editing}}">

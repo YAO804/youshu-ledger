@@ -5,7 +5,8 @@ const {
     shiftMonth, monthEnd, normalizeDate,
 } = require('./format');
 const {
-    DEFAULT_KEY, avatarEmoji, createDefaultProfile, ensureDefaults, normalizeAvatar,
+    AVATAR_CUSTOM, DEFAULT_KEY, avatarDisplay, createDefaultProfile, ensureDefaults,
+    normalizeAvatar, normalizeAvatarData, resolveAvatar,
 } = require('./profile');
 
 const EXPENSE_NAMES = ['餐饮', '交通', '购物', '居住', '日用', '娱乐', '医疗', '教育', '人情', '其他'];
@@ -107,9 +108,14 @@ const ruleAccess = makeAccess(
 
 const profileAccess = makeAccess(
     'ledger_profiles',
-    ['id', 'nickname', 'avatar'],
-    (r) => ({ id: r.id, nickname: r.nickname || '', avatar: r.avatar || '' }),
-    { nickname: 'nickname', avatar: 'avatar' },
+    ['id', 'nickname', 'avatar', 'avatar_data'],
+    (r) => ({
+        id: r.id,
+        nickname: r.nickname || '',
+        avatar: r.avatar || '',
+        avatarData: r.avatar_data || '',
+    }),
+    { nickname: 'nickname', avatar: 'avatar', avatarData: 'avatar_data' },
 );
 
 function defaultAccounts() {
@@ -689,11 +695,14 @@ async function getProfile() {
     const state = loaded.data;
     const row = state.profiles.length ? state.profiles[0] : {};
     const nickname = row.nickname || '';
-    const avatar = normalizeAvatar(row.avatar);
+    const resolved = resolveAvatar(row);
+    const view = avatarDisplay(resolved ? resolved.avatar : '', resolved ? resolved.avatarData : '');
     return ok({
         nickname,
-        avatar,
-        avatarEmoji: avatarEmoji(avatar),
+        avatar: resolved ? resolved.avatar : '',
+        avatarData: resolved ? resolved.avatarData : '',
+        avatarEmoji: view.emoji,
+        avatarImage: view.image,
         nicknameText: nickname || '未设置昵称',
         recordCount: state.records.length,
     });
@@ -704,12 +713,20 @@ async function setProfile(patch) {
     if (loaded.error) return loaded;
     const nickname = String(patch.nickname || '').trim().slice(0, 12);
     const row = { nickname };
-    const avatar = normalizeAvatar(patch.avatar);
-    if (avatar) row.avatar = avatar;
+    // 内置头像写入 key 并清掉图片；上传头像同时写入 data URI；不传头像就只改昵称。
+    const wanted = normalizeAvatar(patch.avatar);
+    const data = normalizeAvatarData(patch.avatarData);
+    if (wanted === AVATAR_CUSTOM && data) {
+        row.avatar = AVATAR_CUSTOM;
+        row.avatarData = data;
+    } else if (wanted && wanted !== AVATAR_CUSTOM) {
+        row.avatar = wanted;
+        row.avatarData = '';
+    }
     if (loaded.data.profiles.length) {
         return writeResult(await profileAccess.update(loaded.data.profiles[0].id, row));
     }
-    return writeResult(await profileAccess.create(Object.assign({ avatar: DEFAULT_KEY }, row)));
+    return writeResult(await profileAccess.create(Object.assign({ avatar: DEFAULT_KEY, avatarData: '' }, row)));
 }
 
 async function exportCsv() {

@@ -1,7 +1,8 @@
 const store = require('../../utils/ledger-store');
 const {
-    avatarEmoji, avatarOptions, nextAvatar,
+    AVATAR_CUSTOM, avatarDisplay, avatarEmoji, avatarOptions, nextAvatar,
 } = require('../../utils/profile');
+const { pickAvatarImage } = require('../../utils/avatar-image');
 
 Page({
     data: {
@@ -9,8 +10,11 @@ Page({
         nickname: '',
         nicknameText: '未设置昵称',
         avatar: '',
+        avatarData: '',
         avatarEmoji: avatarEmoji(''),
+        avatarImage: '',
         draftAvatar: '',
+        draftImage: '',
         nicknameInput: '',
         avatarOptions: avatarOptions(),
         editing: false,
@@ -146,33 +150,42 @@ Page({
             nickname: data.nickname,
             nicknameText: data.nicknameText,
             avatar: data.avatar,
+            avatarData: data.avatarData,
             recordCount: data.recordCount,
         };
         // 正在编辑时不要把用户没保存的输入（含头像预览）冲掉。
         if (!this.data.editing) {
             patch.nicknameInput = data.nickname;
             patch.draftAvatar = data.avatar;
+            patch.draftImage = data.avatarData;
             patch.avatarEmoji = data.avatarEmoji;
+            patch.avatarImage = data.avatarImage;
         }
         this.setData(patch);
     },
 
     onEditStart() {
         if (this.data.editing) return;
+        const display = avatarDisplay(this.data.avatar, this.data.avatarData);
         this.setData({
             editing: true,
             nicknameInput: this.data.nickname,
             draftAvatar: this.data.avatar,
-            avatarEmoji: avatarEmoji(this.data.avatar),
+            draftImage: this.data.avatarData,
+            avatarEmoji: display.emoji,
+            avatarImage: display.image,
         });
     },
 
     onCancelEdit() {
+        const display = avatarDisplay(this.data.avatar, this.data.avatarData);
         this.setData({
             editing: false,
             nicknameInput: this.data.nickname,
             draftAvatar: this.data.avatar,
-            avatarEmoji: avatarEmoji(this.data.avatar),
+            draftImage: this.data.avatarData,
+            avatarEmoji: display.emoji,
+            avatarImage: display.image,
         });
     },
 
@@ -180,12 +193,13 @@ Page({
         this.setData({ nicknameInput: event.detail.value });
     },
 
-    // 编辑态点头像就是「换下一个」，展示态点头像进编辑。
+    // 编辑态点头像就是「换下一个」，展示态点头像进编辑；上传的图不参与轮换。
     onAvatarTap() {
         if (!this.data.editing) {
             this.onEditStart();
             return;
         }
+        if (this.data.draftAvatar === AVATAR_CUSTOM) return;
         this.applyDraftAvatar(nextAvatar(this.data.draftAvatar));
     },
 
@@ -196,7 +210,34 @@ Page({
     },
 
     applyDraftAvatar(key) {
-        this.setData({ draftAvatar: key, avatarEmoji: avatarEmoji(key) });
+        this.setData({
+            draftAvatar: key,
+            draftImage: '',
+            avatarEmoji: avatarEmoji(key),
+            avatarImage: '',
+        });
+    },
+
+    // 从相册或相机选一张，裁成 240x240 后以 data URI 预览，保存时才落库。
+    async onChooseAvatar() {
+        if (this.choosingAvatar) return;
+        this.choosingAvatar = true;
+        wx.showLoading({ title: '处理中…', mask: true });
+        const { data, error } = await pickAvatarImage();
+        wx.hideLoading();
+        this.choosingAvatar = false;
+        if (error) {
+            if (error.code !== 'CANCELLED') {
+                wx.showToast({ title: error.message || '选图失败', icon: 'none' });
+            }
+            return;
+        }
+        this.setData({
+            draftAvatar: AVATAR_CUSTOM,
+            draftImage: data,
+            avatarEmoji: '',
+            avatarImage: data,
+        });
     },
 
     async onSaveNickname() {
@@ -206,7 +247,11 @@ Page({
             return;
         }
         wx.showLoading({ title: '保存中…', mask: true });
-        const { error } = await store.setProfile({ nickname, avatar: this.data.draftAvatar });
+        const { error } = await store.setProfile({
+            nickname,
+            avatar: this.data.draftAvatar,
+            avatarData: this.data.draftImage,
+        });
         wx.hideLoading();
         if (error) {
             wx.showToast({ title: error.message, icon: 'none' });

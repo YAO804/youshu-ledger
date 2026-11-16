@@ -3,7 +3,8 @@ const {
     shiftMonth, monthEnd, normalizeDate,
 } = require('./format');
 const {
-    DEFAULT_KEY, avatarEmoji, ensureDefaults, normalizeAvatar,
+    AVATAR_CUSTOM, DEFAULT_KEY, avatarDisplay, ensureDefaults,
+    normalizeAvatar, normalizeAvatarData, resolveAvatar,
 } = require('./profile');
 
 const STORAGE_KEY = 'youshu_ledger_v1';
@@ -38,7 +39,7 @@ function defaultCategories() {
 function defaultState() {
     return {
         version: 1,
-        profile: { nickname: '', avatar: '' },
+        profile: { nickname: '', avatar: '', avatarData: '' },
         accounts: defaultAccounts(),
         categories: defaultCategories(),
         records: [],
@@ -642,10 +643,14 @@ async function getProfile() {
     // 兜底：即使 profile 还没落库，也先渲染一套自动生成的昵称和头像。
     const view = Object.assign({}, state.profile, ensureDefaults(state.profile) || {});
     const nickname = String(view.nickname || '').trim();
+    const resolved = resolveAvatar(view);
+    const display = avatarDisplay(resolved ? resolved.avatar : '', resolved ? resolved.avatarData : '');
     return ok({
         nickname,
-        avatar: normalizeAvatar(view.avatar),
-        avatarEmoji: avatarEmoji(view.avatar),
+        avatar: resolved ? resolved.avatar : '',
+        avatarData: resolved ? resolved.avatarData : '',
+        avatarEmoji: display.emoji,
+        avatarImage: display.image,
         nicknameText: nickname || '未设置昵称',
         recordCount: state.records.length,
     });
@@ -654,9 +659,20 @@ async function getProfile() {
 async function setProfile(patch) {
     const state = load();
     state.profile.nickname = String(patch.nickname || '').trim().slice(0, 12);
-    const avatar = normalizeAvatar(patch.avatar);
-    if (avatar) state.profile.avatar = avatar;
-    else if (!state.profile.avatar) state.profile.avatar = DEFAULT_KEY;
+    // 内置头像写入 key 并清掉图片；上传头像同时写入 data URI；不传头像就只改昵称。
+    const wanted = normalizeAvatar(patch.avatar);
+    const data = normalizeAvatarData(patch.avatarData);
+    if (wanted === AVATAR_CUSTOM && data) {
+        state.profile.avatar = AVATAR_CUSTOM;
+        state.profile.avatarData = data;
+    } else if (wanted && wanted !== AVATAR_CUSTOM) {
+        state.profile.avatar = wanted;
+        state.profile.avatarData = '';
+    }
+    if (!state.profile.avatar) {
+        state.profile.avatar = DEFAULT_KEY;
+        state.profile.avatarData = '';
+    }
     if (!save(state)) return fail('STORAGE_FULL', '本地存储写入失败');
     return ok(state.profile);
 }
@@ -756,7 +772,11 @@ async function resetAll() {
     // 昵称和头像是身份，不是账目，清空数据时保留。
     const keep = load().profile || {};
     const state = defaultState();
-    state.profile = { nickname: keep.nickname || '', avatar: keep.avatar || '' };
+    state.profile = {
+        nickname: keep.nickname || '',
+        avatar: keep.avatar || '',
+        avatarData: keep.avatarData || '',
+    };
     if (!save(state)) return fail('STORAGE_FULL', '本地存储写入失败');
     return ok({ reset: true });
 }
