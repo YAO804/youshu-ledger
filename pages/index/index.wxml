@@ -1,4 +1,6 @@
 <view class="page">
+    <view wx:if="{{storageNotice}}" class="storage-banner">{{storageNotice}}</view>
+
     <view class="card month-bar">
         <view class="month-btn" bindtap="onPrevMonth">‹</view>
         <text class="month-label">{{monthLabel || month}}</text>

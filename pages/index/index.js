@@ -27,6 +27,7 @@ Page({
         toggleText: '',
         budgetHint: '',
         budgetOver: false,
+        storageNotice: '',
         viewState: 'loading',
         errorText: '',
     },
@@ -45,13 +46,15 @@ Page({
     },
 
     async refresh() {
-        this.setData({ viewState: 'loading' });
+        this.setData({ viewState: 'loading', storageNotice: store.notice });
         const { data, error } = await store.getDashboard(this.data.month);
+        // 降级可能就发生在这次请求里，请求后再同步一次提示条。
+        const storageNotice = store.notice;
         if (error) {
-            this.setData({ viewState: 'error', errorText: error.message });
+            this.setData({ viewState: 'error', errorText: error.message, storageNotice });
             return;
         }
-        this.setData(Object.assign({ viewState: 'ready' }, data, {
+        this.setData(Object.assign({ viewState: 'ready', storageNotice }, data, {
             showAll: false,
             displayRecords: data.recentRecords,
             toggleText: data.recordCount > 5 ? '查看全部 ' + data.recordCount + ' 笔' : '',

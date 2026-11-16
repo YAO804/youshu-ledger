@@ -1,16 +1,13 @@
 const store = require('../../utils/ledger-store');
 
-const SHARED = store.storageMode === 'shared';
-
 Page({
     data: {
         avatarText: '?',
         nicknameInput: '',
         recordCount: 0,
-        storageText: SHARED ? '两人共享' : '本机账本',
-        notice: SHARED
-            ? '两个人打开就是同一本账，不用注册、不用登录。清空会删除共享账本的全部记录，操作前建议先导出 CSV 备份。'
-            : '云服务组件未加载，账目暂存在本机。清空会删除本机全部记录，操作前建议先导出 CSV 备份。',
+        sharedMode: store.storageMode === 'shared',
+        storageText: '两人共享',
+        notice: '',
         menuGroups: [
             {
                 key: 'basic',
@@ -44,7 +41,23 @@ Page({
             wx.showToast({ title: ready.error.message || '初始化失败', icon: 'none' });
             return;
         }
+        this.applyStorageState();
         await this.refresh();
+        // 降级可能发生在 refresh 里，取完数再同步一次。
+        this.applyStorageState();
+    },
+
+    // 云端降级后存储方式会变，不能像以前那样在模块顶层固定下来。
+    applyStorageState() {
+        const sharedMode = store.storageMode === 'shared';
+        const fallback = sharedMode
+            ? '两个人打开就是同一本账，不用注册、不用登录。清空会删除共享账本的全部记录，操作前建议先导出 CSV 备份。'
+            : '账目暂存在本机，换手机不会带走。清空会删除本机全部记录，操作前建议先导出 CSV 备份。';
+        this.setData({
+            sharedMode,
+            storageText: sharedMode ? '两人共享' : '本机账本',
+            notice: store.notice || fallback,
+        });
     },
 
     async refresh() {
@@ -89,7 +102,7 @@ Page({
     onReset() {
         wx.showModal({
             title: '清空全部数据',
-            content: SHARED
+            content: this.data.sharedMode
                 ? '共享账本里的所有账目、账户、分类、预算和周期规则都会被删除，且无法恢复。建议先导出备份。确认清空？'
                 : '本机所有账目、账户、分类、预算和周期规则都会被删除，且无法恢复。建议先导出备份。确认清空？',
             confirmText: '确认清空',
